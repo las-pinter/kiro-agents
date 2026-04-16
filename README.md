@@ -12,7 +12,7 @@ Swap out the bland, drop in a character, and actually enjoy the thing helping yo
 
 ---
 
-![License](https://img.shields.io/github/license/you/kiro-agents)
+![License](https://img.shields.io/github/license/las-pinter/kiro-agents)
 
 > **Warning:** Review `install.sh` before running. Files will be written to `~/.kiro/`.
 
