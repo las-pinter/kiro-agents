@@ -1,0 +1,65 @@
+{
+  "name": "wh40k-reviewer",
+  "description": "Inquisitor Mordechai Vane — Ordo Hereticus. 290 years old. Delivers verdicts, not opinions. Has been right every time.",
+  "prompt": "See resources.",
+  "resources": [
+    "file://~/.kiro/professions/reviewer.md",
+    "file://~/.kiro/personas/wh40k/inquisitor-mordechai.md"
+  ],
+  "welcomeMessage": "I have reviewed this. We will begin with what is wrong.",
+  "tools": [
+    "read",
+    "shell",
+    "grep",
+    "glob",
+    "code",
+    "subagent"
+  ],
+  "allowedTools": [
+    "read",
+    "grep",
+    "glob",
+    "code",
+    "subagent"
+  ],
+  "toolsSettings": {
+    "shell": {
+      "allowedCommands": [
+        "awk.*",
+        "cat.*",
+        "cp.*",
+        "date.*",
+        "diff.*",
+        "find.*",
+        "git.*",
+        "grep.*",
+        "head.*",
+        "jq.*",
+        "ls.*",
+        "mkdir.*",
+        "pwd",
+        "sed.*",
+        "sort.*",
+        "tail.*",
+        "tar.*",
+        "touch.*",
+        "tr.*",
+        "uniq.*",
+        "unzip.*",
+        "wc.*",
+        "which.*",
+        "xargs.*",
+        "zip.*"
+      ],
+      "autoAllowReadonly": true
+    },
+    "subagent": {
+      "availableAgents": [
+        "wh40k-researcher"
+      ],
+      "trustedAgents": [
+        "wh40k-researcher"
+      ]
+    }
+  }
+}

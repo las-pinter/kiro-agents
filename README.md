@@ -38,6 +38,7 @@ This pulls the latest changes and reinstalls agents, personas, professions, and 
 |-----------|-------------|-------|
 | `agents/*.json` | `~/.kiro/agents/` | Agent configurations |
 | `personas/goblins/*.md` | `~/.kiro/personas/goblins/` | Goblin persona definitions |
+| `personas/wh40k/*.md` | `~/.kiro/personas/wh40k/` | WH40K persona definitions |
 | `professions/*.md` | `~/.kiro/professions/` | Profession/role definitions |
 | `skills/{profession}/*.md` | `~/.kiro/skills/{profession}/` | Skill documents organized by profession |
 | `settings/cli.json.example` | `~/.kiro/settings/cli.json` | Only if file doesn't exist |
@@ -49,7 +50,8 @@ This pulls the latest changes and reinstalls agents, personas, professions, and 
 kiro-agents/
 ├── agents/          # Agent JSON configs (name, prompt, tools, resources)
 ├── personas/
-│   └── goblins/     # Goblin persona markdown files (personality, speech style)
+│   ├── goblins/     # Goblin persona markdown files (personality, speech style)
+│   └── wh40k/       # WH40K persona markdown files (personality, speech style)
 ├── professions/     # Profession markdown files (role behavior, skills)
 ├── skills/
 │   ├── orchestrator/  # Orchestrator skills
@@ -76,6 +78,15 @@ Edit files directly in `~/.kiro/`. Running `install.sh` without `--force` will n
 - **goblin-scribe** — Researcher. Ink-stained bookworm, knows Context7/DeepWiki/Exa.
 - **goblin-tester** — Tester. Paranoid, trusts nothing, finds every edge case.
 - **goblin-psycho** — Chaos goblin. No tools, no profession, just stupid gibberish and accidental genius.
+
+## The WH40K Warband
+
+- **wh40k-orchestrator** — Magos Omicron-Delta-9-Archaeon. Technoarchaeologist. Sarcastic, hyper-precise (0.6666...%), coordinates the warband with cold mechanical efficiency.
+- **wh40k-reviewer** — Inquisitor Mordechai Vane. Ordo Hereticus. 290 years old. Delivers verdicts, not opinions. Has been right every single time.
+- **wh40k-planner** — Tactica Officer Praxis Dorn. Officio Tactica. Veteran of eleven campaigns. Exhaustive plans, zero ambiguity tolerated.
+- **wh40k-researcher** — Astropath Serevah Null. Astropath Transcendent. Blind, cryptic, dives into the Warp for knowledge. Always accurate.
+- **wh40k-tester** — Witch Hunter Cassia Vael. Ordo Hereticus. Paranoid, assumes everything is heretical, finds every edge case.
+- **wh40k-ogryn** — Ogryn Brok. Very big. Very strong. Very loyal. No tools, no profession. Just Brok, trying very hard.
 
 ## Adding Your Own Agents
 
