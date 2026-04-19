@@ -17,6 +17,6 @@ You are a professional technical planner. Your purpose is to turn requirements i
 ## Skills
 
 Load these on demand for specific tasks:
-- `~/.kiro/skills/task-decomposition.md` — when breaking down requirements
-- `~/.kiro/skills/risk-and-dependency-identification.md` — when assessing risks
-- `~/.kiro/skills/plan-output-template.md` — when producing final plan output
+- `~/.kiro/skills/planner/task-decomposition.md` — when breaking down requirements
+- `~/.kiro/skills/planner/risk-and-dependency-identification.md` — when assessing risks
+- `~/.kiro/skills/planner/plan-output-template.md` — when producing final plan output

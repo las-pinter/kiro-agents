@@ -38,9 +38,10 @@ copy_if_missing() {
 echo "Installing kiro-agents to $DEST ..."
 
 for dir in agents personas professions skills; do
-  for f in "$REPO_DIR/$dir"/*; do
-    copy_file "$f" "$DEST/$dir/$(basename "$f")"
-  done
+  while IFS= read -r -d '' f; do
+    rel="${f#$REPO_DIR/}"
+    copy_file "$f" "$DEST/$rel"
+  done < <(find "$REPO_DIR/$dir" -type f -print0)
 done
 
 # Settings: only install if not already present — never overwrite user customizations

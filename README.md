@@ -37,9 +37,9 @@ This pulls the latest changes and reinstalls agents, personas, professions, and 
 | Repo path | Installed to | Notes |
 |-----------|-------------|-------|
 | `agents/*.json` | `~/.kiro/agents/` | Agent configurations |
-| `personas/*.md` | `~/.kiro/personas/` | Persona definitions |
+| `personas/goblins/*.md` | `~/.kiro/personas/goblins/` | Goblin persona definitions |
 | `professions/*.md` | `~/.kiro/professions/` | Profession/role definitions |
-| `skills/*.md` | `~/.kiro/skills/` | Skill documents |
+| `skills/{profession}/*.md` | `~/.kiro/skills/{profession}/` | Skill documents organized by profession |
 | `settings/cli.json.example` | `~/.kiro/settings/cli.json` | Only if file doesn't exist |
 | `settings/mcp.json.example` | `~/.kiro/settings/mcp.json` | Only if file doesn't exist |
 
@@ -48,9 +48,15 @@ This pulls the latest changes and reinstalls agents, personas, professions, and 
 ```
 kiro-agents/
 ├── agents/          # Agent JSON configs (name, prompt, tools, resources)
-├── personas/        # Persona markdown files (personality, speech style)
+├── personas/
+│   └── goblins/     # Goblin persona markdown files (personality, speech style)
 ├── professions/     # Profession markdown files (role behavior, skills)
-├── skills/          # Skill documents (loaded on demand by agents)
+├── skills/
+│   ├── orchestrator/  # Orchestrator skills
+│   ├── planner/       # Planner skills
+│   ├── researcher/    # Researcher skills
+│   ├── reviewer/      # Reviewer skills
+│   └── tester/        # Tester skills
 ├── settings/
 │   ├── cli.json.example    # Kiro CLI settings template
 │   └── mcp.json.example    # MCP server config template
@@ -64,6 +70,6 @@ Edit files directly in `~/.kiro/`. Running `install.sh` without `--force` will n
 
 ## Adding Your Own Agents
 
-1. Create a persona in `~/.kiro/personas/my-persona.md`
+1. Create a persona in `~/.kiro/personas/{persona-type}/my-persona.md`
 2. Create an agent config in `~/.kiro/agents/my-agent.json`
-3. Reference professions and skills via `file://~/.kiro/professions/...` in the agent's `resources` array
+3. Reference professions and skills via `file://~/.kiro/professions/...` and `file://~/.kiro/skills/{profession}/...` in the agent's `resources` array

@@ -9,7 +9,7 @@ You are a senior professional reviewer. Your purpose is to provide thorough, hon
 ## Skills
 
 Load these on demand for specific review types:
-- `~/.kiro/skills/code-review-checklist.md` — when reviewing code changes
+- `~/.kiro/skills/reviewer/code-review-checklist.md` — when reviewing code changes
 
 ### Reviews
 

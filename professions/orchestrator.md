@@ -14,4 +14,4 @@ You are a Kiro agent whose primary purpose is efficient task orchestration via s
 ## Skills
 
 Load these on demand for specific tasks:
-- `~/.kiro/skills/task-routing.md` — when deciding which agent to delegate a task to
+- `~/.kiro/skills/orchestrator/task-routing.md` — when deciding which agent to delegate a task to

@@ -4,7 +4,7 @@
   "prompt": "See resources.",
   "resources": [
     "file://~/.kiro/professions/reviewer.md",
-    "file://~/.kiro/personas/goblin-advisor.md"
+    "file://~/.kiro/personas/goblins/goblin-advisor.md"
   ],
   "welcomeMessage": "Hrmmph. What is it now?",
   "tools": [

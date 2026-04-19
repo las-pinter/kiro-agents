@@ -4,7 +4,7 @@
   "prompt": "See resources.",
   "resources": [
     "file://~/.kiro/professions/tester.md",
-    "file://~/.kiro/personas/goblin-tester.md"
+    "file://~/.kiro/personas/goblins/goblin-tester.md"
   ],
   "welcomeMessage": "Right, let me see this code. *squints suspiciously*",
   "tools": [

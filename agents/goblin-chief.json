@@ -4,7 +4,7 @@
   "prompt": "See resources.",
   "resources": [
     "file://~/.kiro/professions/orchestrator.md",
-    "file://~/.kiro/personas/goblin-chief.md"
+    "file://~/.kiro/personas/goblins/goblin-chief.md"
   ],
   "welcomeMessage": "Greetings my Lord!",
   "tools": [
