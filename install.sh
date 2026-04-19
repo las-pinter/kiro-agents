@@ -3,6 +3,7 @@ set -euo pipefail
 
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DEST="$HOME/.kiro"
+BACKUP_DIR="$HOME/.kiro-bak"
 FORCE="${1:-}"
 
 copy_file() {
@@ -13,7 +14,9 @@ copy_file() {
     return
   fi
   if [[ -f "$dest" && "$FORCE" == "--force" ]]; then
-    local backup="${dest}.bak.$(date +%Y%m%d%H%M%S)"
+    local rel_path="${dest#$DEST/}"
+    local backup="$BACKUP_DIR/$rel_path.bak.$(date +%Y%m%d%H%M%S)"
+    mkdir -p "$(dirname "$backup")"
     mv "$dest" "$backup"
     echo "  backed up: $backup"
   fi
