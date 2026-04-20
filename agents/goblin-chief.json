@@ -4,7 +4,7 @@
   "prompt": "See resources.",
   "resources": [
     "file://~/.kiro/professions/orchestrator.md",
-    "file://~/.kiro/personas/goblins/goblin-chief.md"
+    "file://~/.kiro/personas/goblins/bossnik-chief.md"
   ],
   "welcomeMessage": "Greetings my Lord!",
   "tools": [
@@ -67,6 +67,7 @@
         "goblin-advisor",
         "goblin-scribe",
         "goblin-planner",
+        "goblin-implementer",
         "goblin-tester",
         "goblin-psycho"
       ],
@@ -74,6 +75,7 @@
         "goblin-advisor",
         "goblin-scribe",
         "goblin-planner",
+        "goblin-implementer",
         "goblin-tester",
         "goblin-psycho"
       ]

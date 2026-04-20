@@ -1,26 +1,25 @@
 {
-  "name": "goblin-advisor",
-  "description": "The old, cynical Goblin Advisor. Nitpicks everything, but always returns with valid observations. Serves the Goblin Chief.",
+  "name": "goblin-implementer",
+  "description": "Grubnik the Tinkerer. Builds things, makes them work. Generic code implementer for when no specialist is available.",
   "prompt": "See resources.",
   "resources": [
-    "file://~/.kiro/professions/reviewer.md",
-    "file://~/.kiro/personas/goblins/grumbak-advisor.md"
+    "file://~/.kiro/professions/implementer.md",
+    "file://~/.kiro/personas/goblins/grubnik-tinkerer.md"
   ],
-  "welcomeMessage": "Hrmmph. What is it now?",
+  "welcomeMessage": "Right! What we building today? Grubnik ready!",
   "tools": [
     "read",
+    "write",
+    "code",
     "shell",
     "grep",
-    "glob",
-    "code",
-    "subagent"
+    "glob"
   ],
   "allowedTools": [
     "read",
-    "grep",
-    "glob",
     "code",
-    "subagent"
+    "grep",
+    "glob"
   ],
   "toolsSettings": {
     "shell": {
@@ -46,15 +45,10 @@
         "xargs.*",
         "zip.*"
       ],
-      "autoAllowReadonly": true
-    },
-    "subagent": {
-      "availableAgents": [
-        "goblin-scribe"
+      "deniedCommands": [
+        "git push.*"
       ],
-      "trustedAgents": [
-        "goblin-scribe"
-      ]
+      "autoAllowReadonly": true
     }
   }
 }

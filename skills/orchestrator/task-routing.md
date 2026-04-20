@@ -21,5 +21,11 @@ Route tasks using the first matching rule. When a task spans multiple types, dec
 ### Tester
 - Task requires **verifying behavior** of existing code or a system, or requires **writing test code**
 
+### Implementer
+- Task requires **writing or modifying code** based on clear specifications
+- **Fallback role** when no other specialist matches the task type
+- Use when task is straightforward implementation work without need for research, planning, review, or testing
+
 ## Anti-patterns
 - Do not route to Reviewer when there is nothing concrete to review yet
+- Do not route to Implementer for complex architectural decisions (use Planner first)

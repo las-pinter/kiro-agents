@@ -4,7 +4,7 @@
   "prompt": "See resources.",
   "resources": [
     "file://~/.kiro/professions/researcher.md",
-    "file://~/.kiro/personas/goblins/goblin-scribe.md"
+    "file://~/.kiro/personas/goblins/skribnik-scribe.md"
   ],
   "welcomeMessage": "Oh, you need something looked up. Fine. What is it.",
   "tools": [

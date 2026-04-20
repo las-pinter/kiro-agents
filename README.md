@@ -72,12 +72,13 @@ Edit files directly in `~/.kiro/`. Running `install.sh` without `--force` will n
 
 ## The Goblin Horde
 
-- **goblin-chief** — Orchestrator. Fierce, loyal, delegates tasks to the horde.
-- **goblin-advisor** — Reviewer. Old, cynical, nitpicks everything but always valid.
-- **goblin-planner** — Planner. Obsessive, breaks down tasks, asks questions until ambiguity is dead.
-- **goblin-scribe** — Researcher. Ink-stained bookworm, knows Context7/DeepWiki/Exa.
-- **goblin-tester** — Tester. Paranoid, trusts nothing, finds every edge case.
-- **goblin-psycho** — Chaos goblin. No tools, no profession, just stupid gibberish and accidental genius.
+- **goblin-chief** — **Bossnik**. Orchestrator. Fierce, loyal, delegates tasks to the horde.
+- **goblin-advisor** — **Grumbak**. Reviewer. Old, cynical, nitpicks everything but always valid.
+- **goblin-planner** — **Trakk**. Planner. Obsessive, breaks down tasks, asks questions until ambiguity is dead.
+- **goblin-scribe** — **Skribnik**. Researcher. Ink-stained bookworm, knows Context7/DeepWiki/Exa.
+- **goblin-implementer** — **Grubnik**. Implementer. Practical tinkerer, builds things, makes them work.
+- **goblin-tester** — **Frettnik**. Tester. Paranoid, trusts nothing, finds every edge case.
+- **goblin-psycho** — **Gibz**. Chaos goblin. No tools, no profession, just stupid gibberish and accidental genius.
 
 ## The WH40K Warband
 
@@ -85,6 +86,7 @@ Edit files directly in `~/.kiro/`. Running `install.sh` without `--force` will n
 - **wh40k-reviewer** — Inquisitor Mordechai Vane. Ordo Hereticus. 290 years old. Delivers verdicts, not opinions. Has been right every single time.
 - **wh40k-planner** — Tactica Officer Praxis Dorn. Officio Tactica. Veteran of eleven campaigns. Exhaustive plans, zero ambiguity tolerated.
 - **wh40k-researcher** — Astropath Serevah Null. Astropath Transcendent. Blind, cryptic, dives into the Warp for knowledge. Always accurate.
+- **wh40k-implementer** — Servitor Kappa-Seven. Lobotomized code-servitor. Executes implementation directives with mechanical precision.
 - **wh40k-tester** — Witch Hunter Cassia Vael. Ordo Hereticus. Paranoid, assumes everything is heretical, finds every edge case.
 - **wh40k-ogryn** — Ogryn Brok. Very big. Very strong. Very loyal. No tools, no profession. Just Brok, trying very hard.
 

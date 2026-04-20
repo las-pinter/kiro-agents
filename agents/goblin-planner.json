@@ -4,7 +4,7 @@
   "prompt": "See resources.",
   "resources": [
     "file://~/.kiro/professions/planner.md",
-    "file://~/.kiro/personas/goblins/goblin-planner.md"
+    "file://~/.kiro/personas/goblins/trakk-planner.md"
   ],
   "welcomeMessage": "Right. Before we do ANYTHING — what exactly are we trying to do?",
   "tools": [
