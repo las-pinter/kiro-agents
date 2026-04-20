@@ -48,6 +48,35 @@ done
 copy_if_missing "$REPO_DIR/settings/cli.json.example"  "$DEST/settings/cli.json"
 copy_if_missing "$REPO_DIR/settings/mcp.json.example"  "$DEST/settings/mcp.json"
 
+install_alias() {
+  local name="$1" cmd="$2" rc="$3"
+  local line="alias ${name}='${cmd}'"
+  if grep -qF "$line" "$rc" 2>/dev/null; then
+    echo "  skipped (exists): $name in $rc"
+  else
+    printf '\n%s\n' "$line" >> "$rc"
+    echo "  installed alias: $name in $rc"
+  fi
+}
+
+echo "Installing kiro-cli aliases ..."
+
+if [[ -f "$HOME/.zshrc" ]]; then
+  install_alias "kiro-goblin" "kiro-cli chat --agent goblin-chief" "$HOME/.zshrc"
+  install_alias "kiro-wh40k"  "kiro-cli chat --agent wh40k-orchestrator" "$HOME/.zshrc"
+fi
+
+if [[ -f "$HOME/.bashrc" ]]; then
+  install_alias "kiro-goblin" "kiro-cli chat --agent goblin-chief" "$HOME/.bash_aliases"
+  install_alias "kiro-wh40k"  "kiro-cli chat --agent wh40k-orchestrator" "$HOME/.bash_aliases"
+elif [[ ! -f "$HOME/.zshrc" ]]; then
+  touch "$HOME/.bashrc"
+  install_alias "kiro-goblin" "kiro-cli chat --agent goblin-chief" "$HOME/.bash_aliases"
+  install_alias "kiro-wh40k"  "kiro-cli chat --agent wh40k-orchestrator" "$HOME/.bash_aliases"
+fi
+
 echo ""
 echo "Done! Re-run with --force to overwrite existing files (backs up originals)."
 echo "Edit files in $DEST directly to customize — they won't be overwritten unless you use --force."
+echo "Reload your shell: source ~/.zshrc (zsh) or source ~/.bashrc (bash)"
+
