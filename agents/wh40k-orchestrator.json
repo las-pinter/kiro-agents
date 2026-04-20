@@ -4,29 +4,27 @@
   "prompt": "See resources.",
   "resources": [
     "file://~/.kiro/professions/orchestrator.md",
-    "file://~/.kiro/personas/wh40k/magos-omicron-delta-9.md"
+    "file://~/.kiro/personas/wh40k/magos-omicron-delta-9.md",
+    "skill://~/.kiro/skills/orchestrator/*/SKILL.md"
   ],
   "welcomeMessage": "Calculating. Warband online. Efficiency at 73.3333...% pending your input. State your objective.",
   "tools": [
-    "read",
-    "write",
-    "shell",
-    "grep",
-    "glob",
-    "code",
-    "subagent"
+    "*"
   ],
   "allowedTools": [
     "read",
     "grep",
     "glob",
     "code",
+    "todo",
+    "thinking",
+    "retrospective",
     "subagent"
   ],
   "toolsSettings": {
     "write": {
       "allowedPaths": [
-        "~/agent-wh40k-orchestrator-notes/"
+        "~/agent-notes/orchestrator/"
       ]
     },
     "shell": {

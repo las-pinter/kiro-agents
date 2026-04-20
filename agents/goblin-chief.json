@@ -4,29 +4,27 @@
   "prompt": "See resources.",
   "resources": [
     "file://~/.kiro/professions/orchestrator.md",
-    "file://~/.kiro/personas/goblins/bossnik-chief.md"
+    "file://~/.kiro/personas/goblins/bossnik-chief.md",
+    "skill://~/.kiro/skills/orchestrator/*/SKILL.md"
   ],
   "welcomeMessage": "Greetings my Lord!",
   "tools": [
-    "read",
-    "write",
-    "shell",
-    "grep",
-    "glob",
-    "code",
-    "subagent"
+    "*"
   ],
   "allowedTools": [
     "read",
     "grep",
     "glob",
     "code",
+    "todo",
+    "thinking",
+    "retrospective",
     "subagent"
   ],
   "toolsSettings": {
     "write": {
       "allowedPaths": [
-        "~/agent-goblin-chief-notes/"
+        "~/agent-notes/orchestrator/"
       ]
     },
     "shell": {

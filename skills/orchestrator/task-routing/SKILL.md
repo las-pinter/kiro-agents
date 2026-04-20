@@ -3,7 +3,7 @@ name: task-routing
 description: Decision rules for assigning tasks to the correct specialist agent type.
 ---
 
-# Skill: Task Routing
+# Task Routing
 
 Route tasks using the first matching rule. When a task spans multiple types, decompose it first.
 
