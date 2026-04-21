@@ -1,6 +1,6 @@
 ---
 name: risk-and-dependency-identification
-description: Identify risks, blockers, and dependencies in a plan before finalizing it.
+description: Identify risks, blockers, and dependencies in a plan before finalizing it. Use after task decomposition, before finalizing a plan.
 ---
 
 # Skill: Risk and Dependency Identification

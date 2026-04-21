@@ -39,13 +39,13 @@ Orchestrators maintain operational journals with hierarchical time-based organiz
 ### Weekly
 - **When:** Sunday 23:59 UTC OR first day of new ISO week OR first run after missed window
 - **Source:** Last 7 (or less if there was a missing summary) daily files from `journals/daily/`
-- **Target:** `journals/weekly/YYYY/YYYY-Wnn.md` (ISO week number)
+- **Target:** `journals/weekly/YYYY-Wnn.md` (ISO week number)
 - **Action:** Synthesize 7 daily summaries into weekly summary, keep it as short as possible
 
 ### Monthly
 - **When:** Last day of month 23:59 UTC OR first day of new month OR first run after missed window
 - **Source:** 4-5 (or less if there was a missing summary) weekly files from `journals/weekly/`
-- **Target:** `journals/monthly/YYYY/YYYY-MM.md`
+- **Target:** `journals/monthly/YYYY-MM.md`
 - **Action:** Synthesize weekly summaries into monthly summary, keep it as short as possible
 
 ### Yearly

@@ -1,6 +1,6 @@
 ---
 name: code-review-checklist
-description: Structured checklist for reviewing code changes thoroughly and consistently.
+description: Structured checklist for reviewing code changes thoroughly and consistently. Use when reviewing code to ensure comprehensive coverage of design, correctness, security, and maintainability.
 ---
 
 # Skill: Code Review Checklist

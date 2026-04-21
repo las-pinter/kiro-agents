@@ -1,6 +1,6 @@
 ---
 name: regression-identification
-description: Identify which existing tests are relevant to a change and what new tests are needed to cover gaps.
+description: Identify which existing tests are relevant to a change and what new tests are needed to cover gaps. Use when a change is made to existing code to identify regression risk and test coverage needs.
 ---
 
 # Skill: Regression Identification
