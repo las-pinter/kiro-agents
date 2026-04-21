@@ -46,6 +46,9 @@
         "xargs.*",
         "zip.*"
       ],
+      "deniedCommands": [
+        "git push.*"
+      ],
       "autoAllowReadonly": true
     },
     "subagent": {
