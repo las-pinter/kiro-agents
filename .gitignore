@@ -1,0 +1,25 @@
+# Editor files
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment files
+.env
+.env.local
+
+# Node modules (if any tooling added)
+node_modules/
+
+# Python cache (if any tooling added)
+__pycache__/
+*.pyc
+*.pyo
+
+# Logs
+*.log
