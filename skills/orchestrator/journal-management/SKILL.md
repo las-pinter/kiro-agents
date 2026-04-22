@@ -1,6 +1,6 @@
 ---
 name: journal-management
-description: Hierarchical journal system for orchestrator operational memory with time-based consolidation.
+description: Hierarchical journal system for orchestrator operational context with time-based consolidation.
 ---
 
 # Journal Management
@@ -8,7 +8,7 @@ description: Hierarchical journal system for orchestrator operational memory wit
 ## When to Use
 
 - At session startup to load recent operational context
-- During active work to record completed operations in working memory
+- During active work to record completed operations in working journal
 - At scheduled intervals (daily/weekly/monthly/yearly) to consolidate and summarize entries
 
 Orchestrators maintain operational journals with hierarchical time-based organization. Daily entries consolidate into weekly, weekly into monthly, monthly into yearly summaries. This preserves detail while managing context window limits.
@@ -32,7 +32,7 @@ Orchestrators maintain operational journals with hierarchical time-based organiz
 
 ## Write Timing
 
-### Working Memory
+### Working Journal
 - **When:** During active session, append as operations complete
 - **Target:** `journals/working/current.md`
 
@@ -40,7 +40,7 @@ Orchestrators maintain operational journals with hierarchical time-based organiz
 - **When:** 00:00 UTC OR session shutdown (if >6 hours since last consolidation) OR first run after missed window
 - **Source:** `journals/working/current.md`
 - **Target:** `journals/daily/YYYY-MM-DD.md`
-- **Action:** Consolidate working memory, daily file, clear working memory after successful write
+- **Action:** Consolidate working journal, daily file, clear working journal after successful write
 
 ### Weekly
 - **When:** Sunday 23:59 UTC OR first day of new ISO week OR first run after missed window
@@ -64,5 +64,5 @@ Orchestrators maintain operational journals with hierarchical time-based organiz
 
 ### Always Load (in order)
 
-1. The latest summary in `journals/daily/` if there is any
-2. The summary in `journals/working/current.md` if there is any
+1. The latest daily journal from `journals/daily/` if there is any
+2. The current working journal from `journals/working/current.md` if there is any
