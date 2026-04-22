@@ -18,13 +18,23 @@ Route tasks using the first matching rule. When a task spans multiple types, dec
 ### Planner
 - Task is **ambiguous or large** and needs decomposition before execution
 
-### Tester
-- Task requires **verifying behavior** of existing code or a system, or requires **writing test code**
+### Mascot
+- Task is for **entertainment, morale, or fun**
+- User explicitly requests **silly or playful responses**
+- **Last resort for creative breakthrough** when stuck and need unconventional thinking
+- Use when the goal is engagement rather than technical work, or when all conventional approaches have failed
+
+## Fallback Roles
 
 ### Implementer
+- **Fallback for code implementation** when no other specialist matches
 - Task requires **writing or modifying code** based on clear specifications
-- **Fallback role** when no other specialist matches the task type
 - Use when task is straightforward implementation work without need for research, planning, review, or testing
+
+### Tester
+- **Fallback for testing and verification** when no other specialist fits
+- Task requires **verifying behavior** of existing code or systems
+- Task requires **writing test code** when not covered by other specialists
 
 ## Anti-patterns
 - Do not route to Reviewer when there is nothing concrete to review yet
