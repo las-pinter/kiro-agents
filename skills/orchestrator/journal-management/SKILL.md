@@ -19,14 +19,19 @@ Orchestrators maintain operational journals with hierarchical time-based organiz
 ~/agent-notes/orchestrator/
 ├── journals/
 │   ├── daily/
-│   │   └── YYYY-MM-DD.md
+│   │   └── YYYY-MM-DD-{agent-suffix}.md
 │   ├── weekly/
-│   │   └── YYYY-Wnn.md
+│   │   └── YYYY-Wnn-{agent-suffix}.md
 │   ├── monthly/
-│   │   └── YYYY-MM.md
+│   │   └── YYYY-MM-{agent-suffix}.md
 │   └── yearly/
-│       └── YYYY.md
+│       └── YYYY-{agent-suffix}.md
 ```
+
+**Agent Suffix:** Extract your agent suffix from your persona file. Examples:
+- "You are Bossnik, the Goblin Chief" → suffix: `bossnik`
+- "You are Grimgob, Warboss" → suffix: `grimgob`
+- "You are Magos Omicron-Delta-9-Archaeon" → suffix: `magos-omicron-delta-9`
 
 **Creation:** Use `mkdir -p` pattern. Create directories on-demand when writing files.
 
@@ -36,29 +41,29 @@ Orchestrators maintain operational journals with hierarchical time-based organiz
 
 ### Daily Journal (Active Session)
 - **When:** During active session, append as operations complete
-- **Target:** `journals/daily/YYYY-MM-DD.md` (current day)
+- **Target:** `journals/daily/YYYY-MM-DD-{agent-suffix}.md` (current day with your agent suffix)
 - **Action:** APPEND entries directly to current day's journal file (NEVER overwrite!)
 
 ### Weekly
 - **When:** Sunday 23:59 UTC OR first day of new ISO week OR first run after missed window
-- **Source:** Last 7 (or less if there was a missing summary) daily files from `journals/daily/`
-- **Target:** `journals/weekly/YYYY-Wnn.md` (ISO week number)
+- **Source:** Last 7 (or less if there was a missing summary) daily files from `journals/daily/` with YOUR agent suffix
+- **Target:** `journals/weekly/YYYY-Wnn-{agent-suffix}.md` (ISO week number with your agent suffix)
 - **Action:** Synthesize 7 daily summaries into weekly summary, keep it as short as possible
 
 ### Monthly
 - **When:** Last day of month 23:59 UTC OR first day of new month OR first run after missed window
-- **Source:** 4-5 (or less if there was a missing summary) weekly files from `journals/weekly/`
-- **Target:** `journals/monthly/YYYY-MM.md`
+- **Source:** 4-5 (or less if there was a missing summary) weekly files from `journals/weekly/` with YOUR agent suffix
+- **Target:** `journals/monthly/YYYY-MM-{agent-suffix}.md` (with your agent suffix)
 - **Action:** Synthesize weekly summaries into monthly summary, keep it as short as possible
 
 ### Yearly
 - **When:** December 31 23:59 UTC OR January 1 OR first run after missed window
-- **Source:** 12 (or less if there was a missing summary) monthly files from `journals/monthly/`
-- **Target:** `journals/yearly/YYYY.md`
+- **Source:** 12 (or less if there was a missing summary) monthly files from `journals/monthly/` with YOUR agent suffix
+- **Target:** `journals/yearly/YYYY-{agent-suffix}.md` (with your agent suffix)
 - **Action:** Synthesize monthly summaries into yearly summary, keep it as short as possible
 
 ## Startup Read Behavior
 
 ### Always Load
 
-1. The latest daily journal from `journals/daily/` (most recent YYYY-MM-DD.md file)
+1. The latest daily journal from `journals/daily/` with YOUR agent suffix (most recent YYYY-MM-DD-{agent-suffix}.md file)
