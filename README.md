@@ -107,6 +107,16 @@ Edit files directly in `~/.kiro/`. Running `install.sh` without `--force` will n
 - **wh40k-tester** — Witch Hunter Cassia Vael. Ordo Hereticus. Paranoid, assumes everything is heretical, finds every edge case.
 - **wh40k-ogryn** — Ogryn Brok. Very big. Very strong. Very loyal. No tools, no profession. Just Brok, trying very hard.
 
+## The WH40K Ork Warband
+
+- **wh40k-ork-orchestrator** — Warboss Grimgob. Da biggest an' da boss. Yells orders, krumps heads, makes da boyz work togetha. WAAAGH!
+- **wh40k-ork-reviewer** — Nob Skullbasha. Big mean Nob. Looks at yer work, tells ya if it's proppa or if ya need a good bashin'. Usually needs bashin'.
+- **wh40k-ork-researcher** — Kommando Snaggit. Sneaky git. Goes lookin' fer knowledge in places uvver boyz don't fink to look. Brings back da good stuff.
+- **wh40k-ork-planner** — Big Mek Sparkgutz. Smartest Mek around. Draws up da plans fer how to make fings work. Lots of diagrams wiv arrows an' sparks.
+- **wh40k-ork-implementer** — Mekboy Wrenchbasha. Builds da fings. Hits 'em wiv a wrench till dey work. Usually works. Sometimes explodes, but dat's part of da fun.
+- **wh40k-ork-tester** — Painboy Gutslicka. Pokes at everyfing to see where it breaks. Finds all da weak bits. Enjoys it way too much.
+- **wh40k-ork-mascot** — Skragwitz da Gigglin'. Little grot. No job, just causes trouble an' giggles. Sometimes says somefing clever by accident.
+
 ## Adding Your Own Agents
 
 1. Create a persona in `~/.kiro/personas/{persona-type}/my-persona.md`
