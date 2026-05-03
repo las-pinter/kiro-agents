@@ -14,8 +14,9 @@ copy_file() {
         return
     fi
     if [[ -f "$dest" && "$FORCE" == "--force" ]]; then
-        local rel_path="${dest#$DEST/}"
-        local backup="$BACKUP_DIR/$rel_path.bak.$(date +%Y%m%d%H%M%S)"
+        local rel_path="${dest#"$DEST"/}"
+        local backup
+        backup="$BACKUP_DIR/$rel_path.bak.$(date +%Y%m%d%H%M%S)"
         mkdir -p "$(dirname "$backup")"
         mv "$dest" "$backup"
         echo "  backed up: $backup"
@@ -47,7 +48,7 @@ echo "Installing kiro-agents to $DEST ..."
 
 for dir in personas professions skills; do
     while IFS= read -r -d '' f; do
-        rel="${f#$REPO_DIR/}"
+        rel="${f#"$REPO_DIR"/}"
         copy_file "$f" "$DEST/$rel"
     done < <(find "$REPO_DIR/$dir" -type f -print0)
 done
