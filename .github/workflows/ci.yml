@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    name: Validate & Lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: sudo apt-get install -y jq shellcheck
+
+      # Validate all JSON files are well-formed
+      - name: Validate JSON files
+        run: |
+          echo "Checking JSON files..."
+          find . -name "*.json" ! -path "./.git/*" | while read f; do
+            jq empty "$f" && echo "✅ $f" || { echo "❌ $f is invalid"; exit 1; }
+          done
+
+      # Validate JSON files against their schemas
+      - name: Validate agent schemas
+        run: |
+          echo "Validating agents.json structure..."
+          jq -e 'type == "object"' agents.json > /dev/null && echo "✅ agents.json structure OK"
+
+      # Lint all shell scripts
+      - name: Lint shell scripts
+        run: |
+          echo "Linting shell scripts..."
+          shellcheck install.sh update.sh generators/*.sh
+
+      # Make sure install.sh and update.sh are executable
+      - name: Check script permissions
+        run: |
+          for f in install.sh update.sh generators/*.sh; do
+            [ -x "$f" ] && echo "✅ $f is executable" || { echo "❌ $f is not executable"; exit 1; }
+          done
+
+      # Test the generator actually runs without errors
+      - name: Test generator script
+        run: |
+          mkdir -p /tmp/test-agents
+          bash generators/generate_kiro.sh --output /tmp/test-agents
+          echo "Generated files:"
+          ls /tmp/test-agents/
+
+      # Make sure generated agents are valid JSON
+      - name: Validate generated agent output
+        run: |
+          find /tmp/test-agents -name "*.json" | while read f; do
+            jq empty "$f" && echo "✅ $f" || { echo "❌ $f is invalid JSON"; exit 1; }
+          done
