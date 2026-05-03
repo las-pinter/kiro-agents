@@ -50,37 +50,45 @@ This pulls the latest changes and reinstalls agents, personas, professions, and 
 
 | Repo path | Installed to | Notes |
 |-----------|-------------|-------|
-| `agents.json` + `templates/*.json` | `~/.kiro/agents/` | Agent configurations generated from templates |
+| `agents.json` + `agents-generic/*.json` | `~/.kiro/agents/` | Agent configurations generated from generic definitions |
 | `personas/goblin/*.md` | `~/.kiro/personas/goblin/` | Goblin persona definitions |
 | `personas/wh40k/*.md` | `~/.kiro/personas/wh40k/` | WH40K persona definitions |
+| `personas/wh40kOrk/*.md` | `~/.kiro/personas/wh40kOrk/` | WH40K Ork persona definitions |
 | `professions/*.md` | `~/.kiro/professions/` | Profession/role definitions |
 | `skills/{profession}/*.md` | `~/.kiro/skills/{profession}/` | Skill documents organized by profession |
-| `settings/cli.json.example` | `~/.kiro/settings/cli.json` | Only if file doesn't exist |
+| `settings/kiro-cli.json.example` | `~/.kiro/settings/cli.json` | Only if file doesn't exist |
 | `settings/mcp.json.example` | `~/.kiro/settings/mcp.json` | Only if file doesn't exist |
 
 ## Structure
 
 ```
 kiro-agents/
-├── agents.json      # Agent registry
-├── templates/       # Agent JSON templates
-├── generate-agents.sh  # Script to generate agents from templates
+├── agents.json              # Agent registry (theme × profession → persona, name)
+├── .agents-kiro/            # Generated agent configs (gitignored)
+├── agents-generic/          # Generic agent definitions + tool schemas
+│   ├── agent-*.json         # Per-profession generic agent with tool permissions
+│   ├── cli-mapping.json     # Opencode tool name → Kiro tool name mapping
+│   ├── schema-agent.json    # JSON Schema for agent configs
+│   └── schema-mapping.json  # JSON Schema for CLI mapping files
+├── generate-kiro.sh         # Script to generate Kiro agent configs from generics
 ├── personas/
-│   ├── goblin/      # Goblin persona markdown files (personality, speech style)
-│   └── wh40k/       # WH40K persona markdown files (personality, speech style)
-├── professions/     # Profession markdown files (role behavior, skills)
-│                    # orchestrator, planner, researcher, implementer, reviewer, tester
+│   ├── goblin/              # Goblin persona markdown files (personality, speech style)
+│   ├── wh40k/               # WH40K persona markdown files (personality, speech style)
+│   └── wh40kOrk/            # WH40K Ork persona markdown files (personality, speech style)
+├── professions/             # Profession markdown files (role behavior, skills)
+│                            # orchestrator, planner, researcher, implementer, reviewer, tester, mascot
 ├── skills/
-│   ├── orchestrator/  # Orchestrator skills
-│   ├── planner/       # Planner skills
-│   ├── researcher/    # Researcher skills
-│   ├── reviewer/      # Reviewer skills
-│   └── tester/        # Tester skills
+│   ├── orchestrator/        # Orchestrator skills
+│   ├── planner/             # Planner skills
+│   ├── researcher/          # Researcher skills
+│   ├── reviewer/            # Reviewer skills
+│   ├── tester/              # Tester skills
+│   └── implementer/         # Implementer skills
 ├── settings/
-│   ├── cli.json.example    # Kiro CLI settings template
-│   └── mcp.json.example    # MCP server config template
-├── install.sh       # Install/reinstall to ~/.kiro/
-└── update.sh        # git pull + reinstall
+│   ├── kiro-cli.json.example  # Kiro CLI settings template
+│   └── mcp.json.example     # MCP server config template
+├── install.sh               # Install/reinstall to ~/.kiro/
+└── update.sh                # git pull + reinstall
 ```
 
 ## Customizing
@@ -118,29 +126,43 @@ Edit files directly in `~/.kiro/`. Running `install.sh` without `--force` will n
 
 | Agent | Character | Role | Description |
 |-------|-----------|------|-------------|
-| wh40k-ork-orchestrator | 🟢 **WARBOSS GRIMGOB**<br>![WAAAGH](https://img.shields.io/badge/WAAAGH!-READY-00FF00?style=for-the-badge) | 🎯 Orchestrator | **DA BIGGEST AN' DA BOSS!** Yells orders, krumps heads, makes da boyz work togetha |
-| wh40k-ork-reviewer | ⚫ **NOB SKULLBASHA**<br>![BASH](https://img.shields.io/badge/BASH-EM-8B0000?style=for-the-badge&labelColor=black) | 🔍 Reviewer | **BIG MEAN NOB!** Looks at yer work, tells ya if it's proppa or if ya need a good bashin'. Usually needs bashin' |
-| wh40k-ork-researcher | 🟣 **KOMMANDO SNAGGIT**<br>![SNEAK](https://img.shields.io/badge/SNEAK-ATTACK-9370DB?style=for-the-badge) | 🔬 Researcher | **SNEAKY GIT!** Goes lookin' fer knowledge in places uvver boyz don't fink to look. Brings back da good stuff |
-| wh40k-ork-planner | 🔵 **BIG MEK SPARKGUTZ**<br>![SPARK](https://img.shields.io/badge/KUNNIN'-PLAN-1E90FF?style=for-the-badge) | 📋 Planner | **SMARTEST MEK AROUND!** Draws up da plans fer how to make fings work. Lots of diagrams wiv arrows an' sparks |
-| wh40k-ork-implementer | 🟠 **MEKBOY WRENCHBASHA**<br>![WRENCH](https://img.shields.io/badge/BUILD-IT-FF8C00?style=for-the-badge) | 🔨 Implementer | **BUILDS DA FINGS!** Hits 'em wiv a wrench till dey work. Usually works. Sometimes explodes, but dat's part of da fun |
-| wh40k-ork-tester | 🟡 **PAINBOY GUTSLICKA**<br>![POKE](https://img.shields.io/badge/TEST-EVERYFING-FFD700?style=for-the-badge) | 🧪 Tester | **POKES AT EVERYFING!** Finds all da weak bits. Enjoys it way too much |
-| wh40k-ork-mascot | 🟤 **SKRAGWITZ DA MADBOY**<br>![MAD](https://img.shields.io/badge/CHAOS-GROT-8B4513?style=for-the-badge) | 🎪 Mascot | **LITTLE GROT!** No job, just causes trouble an' giggles. Sometimes says somefing clever by accident |
+| wh40kOrk-orchestrator | 🟢 **WARBOSS GRIMGOB**<br>![WAAAGH](https://img.shields.io/badge/WAAAGH!-READY-00FF00?style=for-the-badge) | 🎯 Orchestrator | **DA BIGGEST AN' DA BOSS!** Yells orders, krumps heads, makes da boyz work togetha |
+| wh40kOrk-reviewer | ⚫ **NOB SKULLBASHA**<br>![BASH](https://img.shields.io/badge/BASH-EM-8B0000?style=for-the-badge&labelColor=black) | 🔍 Reviewer | **BIG MEAN NOB!** Looks at yer work, tells ya if it's proppa or if ya need a good bashin'. Usually needs bashin' |
+| wh40kOrk-researcher | 🟣 **KOMMANDO SNAGGIT**<br>![SNEAK](https://img.shields.io/badge/SNEAK-ATTACK-9370DB?style=for-the-badge) | 🔬 Researcher | **SNEAKY GIT!** Goes lookin' fer knowledge in places uvver boyz don't fink to look. Brings back da good stuff |
+| wh40kOrk-planner | 🔵 **BIG MEK SPARKGUTZ**<br>![SPARK](https://img.shields.io/badge/KUNNIN'-PLAN-1E90FF?style=for-the-badge) | 📋 Planner | **SMARTEST MEK AROUND!** Draws up da plans fer how to make fings work. Lots of diagrams wiv arrows an' sparks |
+| wh40kOrk-implementer | 🟠 **MEKBOY WRENCHBASHA**<br>![WRENCH](https://img.shields.io/badge/BUILD-IT-FF8C00?style=for-the-badge) | 🔨 Implementer | **BUILDS DA FINGS!** Hits 'em wiv a wrench till dey work. Usually works. Sometimes explodes, but dat's part of da fun |
+| wh40kOrk-tester | 🟡 **PAINBOY GUTSLICKA**<br>![POKE](https://img.shields.io/badge/TEST-EVERYFING-FFD700?style=for-the-badge) | 🧪 Tester | **POKES AT EVERYFING!** Finds all da weak bits. Enjoys it way too much |
+| wh40kOrk-mascot | 🟤 **SKRAGWITZ DA MADBOY**<br>![MAD](https://img.shields.io/badge/CHAOS-GROT-8B4513?style=for-the-badge) | 🎪 Mascot | **LITTLE GROT!** No job, just causes trouble an' giggles. Sometimes says somefing clever by accident |
 
 ---
 
 ## Adding Your Own Agents
 
-1. Create a persona in `~/.kiro/personas/{persona-type}/my-persona.md`
-2. Create an agent template in `~/.kiro/templates/my-agent.json` with the structure:
+To add a new agent to the horde, the system uses **generic agent definitions** combined with per-theme agent registry entries:
+
+1. **Create a persona** in `personas/{theme}/my-character.md`
+
+2. **Add a registry entry** to `agents.json` under your theme:
    ```json
    {
-     "name": "my-agent",
-     "prompt": "Agent description",
-     "resources": [
-       "file://~/.kiro/personas/{persona-type}/my-persona.md",
-       "file://~/.kiro/professions/{profession}.md"
-     ]
+     "my-theme": {
+       "my-profession": {
+         "personaFile": "my-character.md",
+         "description": "What this agent does",
+         "welcomeMessage": "Hello! I am my-agent."
+       }
+     }
    }
    ```
-3. Add your agent to `agents.json` registry
-4. Run `./generate-agents.sh` to generate the final agent configs
+
+3. **Generate agent configs:**
+   ```bash
+   ./generate-kiro.sh --output ~/.kiro/agents
+   ```
+
+The generator combines the **generic agent definition** (`agents-generic/agent-{profession}.json`) with registry data to produce a fully formed Kiro agent config. Tool permissions, resource paths, and settings all resolve automatically.
+
+- Generate all agents: `./generate-kiro.sh --output ~/.kiro/agents`
+- Generate a single profession: `./generate-kiro.sh --output ~/.kiro/agents --profession researcher`
+
+The profession's generic definition (`agents-generic/agent-{profession}.json`) controls tool permissions and capabilities. Only add entries to `agents.json` for the persona metadata (name, description, welcome message, persona file path).
