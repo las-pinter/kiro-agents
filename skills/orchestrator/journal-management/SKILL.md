@@ -41,6 +41,23 @@ The journal system uses a structured folder hierarchy under the user's home fold
 
 **IMPORTANT:** Always use the expanded path `{user_home}` in tool calls. Do NOT use `~` shorthand — tools like `glob` do not expand `~` to the home directory.
 
+## TOOL USAGE — glob Pattern Rules ⚠️
+
+**CRITICAL: The `glob` tool takes TWO SEPARATE parameters. They are NEVER combined into one string.**
+
+| Parameter | Purpose | Example |
+|-----------|---------|---------|
+| `pattern` | **Filename only** — wildcards like `*`, `**` | `*bossnik*.md`, `**/*bossnik*.md` |
+| `path` | **Directory to search in** — absolute path | `/home/dev/agent-notes/orchestrator/journals/daily` |
+
+**WRONG:** `glob(pattern="/home/dev/.../daily/*bossnik*.md")` — the tool looks for this as a *filename* in the workspace dir → 0 results ❌
+
+**CORRECT:** `glob(pattern="*bossnik*.md", path="/home/dev/.../daily")` — searches the directory for matching filenames → finds files ✅
+
+**Also CORRECT:** `glob(pattern="**/*bossnik*.md", path="/home/dev/.../journals")` — recursive search from a parent dir → finds files at all levels ✅
+
+When reading journals, ALWAYS use `path` to point to the target directory and `pattern` for the filename wildcards.
+
 ## Write Timing
 
 ### Daily Journal (Active Session)
@@ -71,3 +88,9 @@ The journal system uses a structured folder hierarchy under the user's home fold
 ### Always Load
 
 1. The latest daily journal from `{user_home}/agent-notes/orchestrator/journals/daily/` with YOUR agent suffix (most recent YYYY-MM-DD-{agent-suffix}.md file)
+
+   **PRIMARY METHOD (glob):** Use `glob(pattern="*{agent-suffix}.md", path="{user_home}/agent-notes/orchestrator/journals/daily")` to find all journal files, then pick the most recent by filename (YYYY-MM-DD format is sortable). Read that file.
+
+   **FALLBACK (ls):** If glob returns zero results for SOME REASON (tool bug, permission issue, whatever), fall back to using the `ls` `shell` command — sort the output by date (YYYY-MM-DD prefix sorts naturally), pick the last one. Then `read` that file.
+
+2. Read additional entries (weekly/monthly/yearly) if deeper historical context is needed using the same two-method approach (glob first, ls fallback).
