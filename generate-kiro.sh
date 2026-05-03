@@ -5,11 +5,14 @@ set -euo pipefail
 # generate-kiro.sh — Generate agent configs for Kiro
 #
 # Usage:
-#   ./generate-kiro.sh [--output DIR] [--profession PROFESSION]
+#   ./generate-kiro.sh [--output DIR] [--profession PROFESSION] [--theme THEME] [--agents-dir DIR]
 #
 # Options:
 #   --output          Output directory for generated agent files (optional)
 #   --profession      Profession to generate (optional)
+#   --theme           Theme to generate (optional)
+#   --agents-dir      Directory containing generic agent definitions and cli-mapping.json
+#                     (defaults to $REPO_DIR/agents-generic)
 # ============================================================================
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -19,9 +22,11 @@ AGENTS_DIR="${SCRIPT_DIR}/.agents-kiro"
 AGENTS_JSON="${SCRIPT_DIR}/agents.json"
 OUTPUT_DIR=""
 PROFESSION=""
+THEME=""
+AGENTS_DIR_OVERRIDE=""
 
 usage() {
-    echo "Usage: $0 [--output DIR] [--profession PROFESSION]"
+    echo "Usage: $0 [--output DIR] [--profession PROFESSION] [--theme THEME] [--agents-dir DIR]"
     exit 1
 }
 
@@ -45,6 +50,24 @@ while [[ $# -gt 0 ]]; do
             usage
         fi
         ;;
+    --theme)
+        if [[ -n "$2" && "$2" != --* ]]; then
+            THEME="$2"
+            shift 2
+        else
+            echo "Error: --theme requires a value."
+            usage
+        fi
+        ;;
+    --agents-dir)
+        if [[ -n "$2" && "$2" != --* ]]; then
+            AGENTS_DIR_OVERRIDE="$2"
+            shift 2
+        else
+            echo "Error: --agents-dir requires a value."
+            usage
+        fi
+        ;;
     --help | -h)
         usage
         ;;
@@ -54,6 +77,12 @@ while [[ $# -gt 0 ]]; do
         ;;
     esac
 done
+
+# Apply agents-dir override if provided
+if [ -n "${AGENTS_DIR_OVERRIDE}" ]; then
+    GENERIC_AGENTS_DIR="${AGENTS_DIR_OVERRIDE}"
+    MAPPING_FILE="${GENERIC_AGENTS_DIR}/cli-mapping.json"
+fi
 
 if ! command -v jq &>/dev/null; then
     echo "Error: jq not found" >&2
@@ -69,12 +98,20 @@ echo "Generating agents to ${OUTPUT_DIR}"
 if [ -n "${PROFESSION}" ]; then
     echo "Generating only ${PROFESSION} agents"
 fi
+if [ -n "${THEME}" ]; then
+    echo "Generating only ${THEME} theme agents"
+fi
 
 mkdir -p "${OUTPUT_DIR}"
 
 THEMES=$(jq -r 'keys[]' "$AGENTS_JSON")
 
 for theme in $THEMES; do
+    if [ -n "${THEME}" ]; then
+        if [ "$theme" != "${THEME}" ]; then
+            continue
+        fi
+    fi
     for profession in $(jq -r ".[\"$theme\"] | keys[]" "$AGENTS_JSON"); do
         if [ -n "${PROFESSION}" ]; then
             if [ "$profession" != "$PROFESSION" ]; then
