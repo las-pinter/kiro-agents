@@ -1,0 +1,33 @@
+{
+  "$schema": "../../../agents-generic/schema-agent.json",
+  "profession": "admin",
+  "tools": {
+    "default": "deny",
+    "read": "allow",
+    "write": {
+      "default": "ask",
+      "~/workspace/**": "allow"
+    },
+    "edit": {
+      "default": "ask"
+    },
+    "shell": {
+      "default": "ask",
+      "git *": "allow",
+      "cp *": "allow",
+      "mv *": "allow"
+    },
+    "subagent": {
+      "default": "ask",
+      "test-admin": "allow",
+      "test-mega": "allow"
+    },
+    "todo": "allow"
+  },
+  "skills": {
+    "default": "ask"
+  },
+  "config": {
+    "includeMcpJson": false
+  }
+}

@@ -21,11 +21,13 @@ Swap out the bland, drop in a character, and actually enjoy the thing helping yo
 `jq` is required for agent generation.
 
 **Ubuntu/Debian:**
+
 ```bash
 sudo apt-get install jq
 ```
 
 **macOS:**
+
 ```bash
 brew install jq
 ```
@@ -70,7 +72,7 @@ kiro-agents/
 │   ├── cli-mapping.json     # Opencode tool name → Kiro tool name mapping
 │   ├── schema-agent.json    # JSON Schema for agent configs
 │   └── schema-mapping.json  # JSON Schema for CLI mapping files
-├── generate-kiro.sh         # Script to generate Kiro agent configs from generics
+├── generate_kiro.sh         # Script to generate Kiro agent configs from generics
 ├── personas/
 │   ├── goblin/              # Goblin persona markdown files (personality, speech style)
 │   ├── wh40k/               # WH40K persona markdown files (personality, speech style)
@@ -143,6 +145,7 @@ To add a new agent to the horde, the system uses **generic agent definitions** c
 1. **Create a persona** in `personas/{theme}/my-character.md`
 
 2. **Add a registry entry** to `agents.json` under your theme:
+
    ```json
    {
      "my-theme": {
@@ -156,14 +159,15 @@ To add a new agent to the horde, the system uses **generic agent definitions** c
    ```
 
 3. **Generate agent configs:**
+
    ```bash
-   ./generate-kiro.sh --output ~/.kiro/agents
+   ./generate_kiro.sh --output ~/.kiro/agents
    ```
 
 The generator combines the **generic agent definition** (`agents-generic/agent-{profession}.json`) with registry data to produce a fully formed Kiro agent config. Tool permissions, resource paths, and settings all resolve automatically.
 
-- Generate all agents: `./generate-kiro.sh --output ~/.kiro/agents`
-- Generate a single profession: `./generate-kiro.sh --output ~/.kiro/agents --profession researcher`
+- Generate all agents: `./generate_kiro.sh --output ~/.kiro/agents`
+- Generate a single profession: `./generate_kiro.sh --output ~/.kiro/agents --profession researcher`
 
 The profession's generic definition (`agents-generic/agent-{profession}.json`) controls tool permissions and capabilities. Only add entries to `agents.json` for the persona metadata (name, description, welcome message, persona file path).
 
@@ -173,19 +177,19 @@ The generator supports fine-grained filtering for targeted agent generation:
 
 ```bash
 # Generate all agents (default)
-./generate-kiro.sh --output ~/.kiro/agents
+./generate_kiro.sh --output ~/.kiro/agents
 
 # Generate only a specific profession across all themes
-./generate-kiro.sh --output ~/.kiro/agents --profession reviewer
+./generate_kiro.sh --output ~/.kiro/agents --profession reviewer
 
 # Generate only a specific theme across all professions
-./generate-kiro.sh --output ~/.kiro/agents --theme wh40k
+./generate_kiro.sh --output ~/.kiro/agents --theme wh40k
 
 # Generate a single agent (theme + profession)
-./generate-kiro.sh --output ~/.kiro/agents --theme wh40k --profession researcher
+./generate_kiro.sh --output ~/.kiro/agents --theme wh40k --profession researcher
 
 # Generate agents from a custom generic definitions directory
-./generate-kiro.sh --output ~/.kiro/agents --agents-dir /path/to/custom-generics
+./generate_kiro.sh --output ~/.kiro/agents --agents-dir /path/to/custom-generics
 ```
 
 This is useful for incremental builds, testing, or generating a subset of agents.

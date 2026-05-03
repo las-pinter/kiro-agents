@@ -37,8 +37,9 @@ copy_if_missing() {
 }
 
 echo "Generating agents from templates..."
-if [[ -x "$REPO_DIR/generate-kiro.sh" ]]; then
-    "$REPO_DIR/generate-kiro.sh" --output "$DEST/agents"
+kiro_generator_script="$REPO_DIR/generators/generate_kiro.sh"
+if [[ -x "$kiro_generator_script" ]]; then
+    "$kiro_generator_script" --output "$DEST/agents"
     echo "  agents generated"
 else
     echo "  warning: generate-kiro.sh not found or not executable"
@@ -73,13 +74,15 @@ echo "Installing kiro-cli aliases ..."
 if [[ -f "$HOME/.zshrc" ]]; then
     install_alias "kiro-goblin" "kiro-cli chat --agent goblin-orchestrator" "$HOME/.zshrc"
     install_alias "kiro-wh40k" "kiro-cli chat --agent wh40k-orchestrator" "$HOME/.zshrc"
-    install_alias "kiro-wh40k-ork" "kiro-cli chat --agent wh40kOrk-orchestrator" "$HOME/.zshrc"
+    install_alias "kiro-wh40kOrk" "kiro-cli chat --agent wh40kOrk-orchestrator" "$HOME/.zshrc"
 fi
 
 if [[ -f "$HOME/.bashrc" ]]; then
-    install_alias "kiro-goblin" "kiro-cli chat --agent goblin-orchestrator" "$HOME/.bashrc"
-    install_alias "kiro-wh40k" "kiro-cli chat --agent wh40k-orchestrator" "$HOME/.bashrc"
-    install_alias "kiro-wh40k-ork" "kiro-cli chat --agent wh40kOrk-orchestrator" "$HOME/.bashrc"
+    touch "$HOME/.bash_aliases"
+
+    install_alias "kiro-goblin" "kiro-cli chat --agent goblin-orchestrator" "$HOME/.bash_aliases"
+    install_alias "kiro-wh40k" "kiro-cli chat --agent wh40k-orchestrator" "$HOME/.bash_aliases"
+    install_alias "kiro-wh40kOrk" "kiro-cli chat --agent wh40kOrk-orchestrator" "$HOME/.bash_aliases"
 fi
 
 echo ""

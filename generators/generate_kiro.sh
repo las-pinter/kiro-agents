@@ -5,28 +5,34 @@ set -euo pipefail
 # generate-kiro.sh — Generate agent configs for Kiro
 #
 # Usage:
-#   ./generate-kiro.sh [--output DIR] [--profession PROFESSION] [--theme THEME] [--agents-dir DIR]
+#   ./generate-kiro.sh --output DIR [--profession PROFESSION] [--theme THEME]
+#                      [--agents-dir DIR] [--agents-json FILE]
 #
 # Options:
-#   --output          Output directory for generated agent files (optional)
-#   --profession      Profession to generate (optional)
-#   --theme           Theme to generate (optional)
-#   --agents-dir      Directory containing generic agent definitions and cli-mapping.json
-#                     (defaults to $REPO_DIR/agents-generic)
+#   --output          Output directory for generated agent files (required)
+#   --profession      Profession to generate (optional, filters by profession across themes)
+#   --theme           Theme to generate (optional, filters by theme across professions)
+#   --agents-dir      Directory containing generic agent definitions (.json files)
+#                     (defaults to <repo>/agents-generic)
+#   --agents-json     Path to agents registry JSON file (defaults to <repo>/agents.json)
+#                     Useful when combined with --agents-dir for isolated test generation
+#
+# The tool mapping file (cli-mapping.json) is always loaded from <repo>/mappings/
+# regardless of --agents-dir or --agents-json.
 # ============================================================================
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-GENERIC_AGENTS_DIR="${SCRIPT_DIR}/agents-generic"
-MAPPING_FILE="${GENERIC_AGENTS_DIR}/cli-mapping.json"
-AGENTS_DIR="${SCRIPT_DIR}/.agents-kiro"
-AGENTS_JSON="${SCRIPT_DIR}/agents.json"
+GENERIC_AGENTS_DIR="${SCRIPT_DIR}/../agents-generic"
+MAPPING_FILE="${SCRIPT_DIR}/../mappings/cli-mapping.json"
+AGENTS_JSON="${SCRIPT_DIR}/../agents.json"
 OUTPUT_DIR=""
 PROFESSION=""
 THEME=""
 AGENTS_DIR_OVERRIDE=""
+AGENTS_JSON_OVERRIDE=""
 
 usage() {
-    echo "Usage: $0 [--output DIR] [--profession PROFESSION] [--theme THEME] [--agents-dir DIR]"
+    echo "Usage: $0 --output DIR [--profession PROFESSION] [--theme THEME] [--agents-dir DIR] [--agents-json FILE]"
     exit 1
 }
 
@@ -68,6 +74,15 @@ while [[ $# -gt 0 ]]; do
             usage
         fi
         ;;
+    --agents-json)
+        if [[ -n "$2" && "$2" != --* ]]; then
+            AGENTS_JSON_OVERRIDE="$2"
+            shift 2
+        else
+            echo "Error: --agents-json requires a value."
+            usage
+        fi
+        ;;
     --help | -h)
         usage
         ;;
@@ -78,10 +93,12 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# Apply agents-dir override if provided
+# Apply overrides if provided
 if [ -n "${AGENTS_DIR_OVERRIDE}" ]; then
     GENERIC_AGENTS_DIR="${AGENTS_DIR_OVERRIDE}"
-    MAPPING_FILE="${GENERIC_AGENTS_DIR}/cli-mapping.json"
+fi
+if [ -n "${AGENTS_JSON_OVERRIDE}" ]; then
+    AGENTS_JSON="${AGENTS_JSON_OVERRIDE}"
 fi
 
 if ! command -v jq &>/dev/null; then
@@ -91,7 +108,8 @@ fi
 
 # Validate required args
 if [ -z "${OUTPUT_DIR}" ]; then
-    OUTPUT_DIR="${AGENTS_DIR}"
+    echo "Error: --output DIR is required."
+    usage
 fi
 
 echo "Generating agents to ${OUTPUT_DIR}"
@@ -113,6 +131,8 @@ for theme in $THEMES; do
         fi
     fi
     for profession in $(jq -r ".[\"$theme\"] | keys[]" "$AGENTS_JSON"); do
+        # Use --arg to safely inject theme name into jq (handles hyphens, special chars)
+        _theme="$theme" && _profession="$profession"
         if [ -n "${PROFESSION}" ]; then
             if [ "$profession" != "$PROFESSION" ]; then
                 continue
@@ -134,13 +154,13 @@ for theme in $THEMES; do
                 "${generic_agent_file}"
         )
 
-        agent_name="$theme-$profession"
-        persona_file=$(jq -r ".${theme}.${profession}.personaFile" "${AGENTS_JSON}")
-        description=$(jq -r ".${theme}.${profession}.description" "${AGENTS_JSON}")
-        welcome_message=$(jq -r ".${theme}.${profession}.welcomeMessage" "${AGENTS_JSON}")
+        agent_name="${_theme}-${_profession}"
+        persona_file=$(jq -r --arg t "$_theme" --arg p "$_profession" '.[$t][$p].personaFile' "${AGENTS_JSON}")
+        description=$(jq -r --arg t "$_theme" --arg p "$_profession" '.[$t][$p].description' "${AGENTS_JSON}")
+        welcome_message=$(jq -r --arg t "$_theme" --arg p "$_profession" '.[$t][$p].welcomeMessage' "${AGENTS_JSON}")
 
-        resource_files='"file://~/.kiro/personas/'"${theme}"'/'"${persona_file}"'"'
-        resource_files="${resource_files}"',"skill://~/.kiro/skills/'"${profession}"'/*/SKILL.md"'
+        resource_files='"file://~/.kiro/personas/'"$_theme"'/'"${persona_file}"'"'
+        resource_files="${resource_files}"',"skill://~/.kiro/skills/'"$_profession"'/*/SKILL.md"'
         resources=$(jq -n --argjson arr '['"${resource_files}"']' '$arr')
 
         prompt="file://~/.kiro/professions/${profession}.md"
@@ -167,6 +187,18 @@ for theme in $THEMES; do
                 if ($v | type) == "object" then true
                 else false end;
 
+            def hasConfigAllowed($v):
+                if hasConfig($v) then
+                    $v |
+                    to_entries[] |
+                    select((.value) == "allow") as $allowed |
+                    if $allowed | length > 0 then true else false end
+                else false end;
+
+            def hasConfigDefaultAllowed($v):
+                if hasConfig($v) and ($v | has("default")) and ($v.default == "allowed") then true
+                else false end;
+
             def translateName($k):
                 getKiroName($k) as $kn |
                 if ($toolsMap | has($k)) and ($toolsMap[$k] | has("kiro")) and ($toolsMap[$k].kiro == false) then empty
@@ -183,17 +215,16 @@ for theme in $THEMES; do
             else
                 [ $tools | to_entries[] |
                     select(.key != "default") |
-                    select(.value == "ask" or .value == "allow" or hasConfig(.value)) |
+                    select(.value != "deny" or hasConfig(.value)) |
                     translateName(.key)
-                ]
+                ] | unique
             end) as $toolsList |
 
-            # --- allowedTools: simple "allow" + config tools, EXCLUDE write (default=ask, dangerous), keep config order ---
+            # --- allowedTools: simple "allow" + config tools, keep config order ---
             ([ $tools | to_entries[] |
                     select(.key != "default") |
-                    select(.value == "allow" or hasConfig(.value)) |
-                    translateName(.key) |
-                    select(. != "write")
+                    select(.value == "allow" or hasConfigDefaultAllowed(.value) or (.key == "subagent" and hasConfigAllowed(.value))) |
+                    translateName(.key)
                 ]) as $allowedTools |
 
             # --- toolsSettings: build, merge (write+edit), follows generic config key order, read mapping keys ---
@@ -227,6 +258,7 @@ for theme in $THEMES; do
                     ] | unique) as $denied |
                     ([ $g[] | .cfg | to_entries[] |
                         select(.key == "config") | .value |
+                        select(type == "object") |
                         to_entries[] |
                         select(isToolConfigForKiro($kn; .key)) |
                         {(.key):(.value)}

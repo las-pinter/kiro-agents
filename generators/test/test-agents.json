@@ -1,0 +1,34 @@
+{
+  "test-theme": {
+    "solo": {
+      "personaFile": "test-goblin.md",
+      "description": "Minimal agent — only read, grep, glob.",
+      "welcomeMessage": "I see. I hear. I find."
+    },
+    "basic": {
+      "personaFile": "test-goblin.md",
+      "description": "Simple agent — full read access, no write permissions.",
+      "welcomeMessage": "Give me the files and I will look at them."
+    },
+    "builder": {
+      "personaFile": "test-goblin.md",
+      "description": "Build agent — can modify files but needs permission.",
+      "welcomeMessage": "I can build, but first you must trust me."
+    },
+    "web": {
+      "personaFile": "test-goblin.md",
+      "description": "Web agent — searches, reads docs, fetches knowledge.",
+      "welcomeMessage": "I went to the web-lands. Here is what I found."
+    },
+    "admin": {
+      "personaFile": "test-goblin.md",
+      "description": "Admin agent — full write, shell, and can delegate to other agents.",
+      "welcomeMessage": "Open sesame. I have the keys and the authority."
+    },
+    "mega": {
+      "personaFile": "test-goblin.md",
+      "description": "Overpowered agent — nearly everything allowed, maximum access.",
+      "welcomeMessage": "I am the mightiest goblin. All paths are open to me."
+    }
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "$schema": "../../../agents-generic/schema-agent.json",
+  "profession": "solo",
+  "tools": {
+    "default": "deny",
+    "read": "allow",
+    "grep": "allow",
+    "glob": "allow"
+  },
+  "skills": {
+    "default": "deny"
+  }
+}
