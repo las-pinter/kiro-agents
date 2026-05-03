@@ -161,13 +161,13 @@ To add a new agent to the horde, the system uses **generic agent definitions** c
 3. **Generate agent configs:**
 
    ```bash
-   ./generate_kiro.sh --output ~/.kiro/agents
+   ./generators/generate_kiro.sh --output ~/.kiro/agents
    ```
 
 The generator combines the **generic agent definition** (`agents-generic/agent-{profession}.json`) with registry data to produce a fully formed Kiro agent config. Tool permissions, resource paths, and settings all resolve automatically.
 
-- Generate all agents: `./generate_kiro.sh --output ~/.kiro/agents`
-- Generate a single profession: `./generate_kiro.sh --output ~/.kiro/agents --profession researcher`
+- Generate all agents: `./generators/generate_kiro.sh --output ~/.kiro/agents`
+- Generate a single profession: `./generators/generate_kiro.sh --output ~/.kiro/agents --profession researcher`
 
 The profession's generic definition (`agents-generic/agent-{profession}.json`) controls tool permissions and capabilities. Only add entries to `agents.json` for the persona metadata (name, description, welcome message, persona file path).
 
@@ -177,19 +177,19 @@ The generator supports fine-grained filtering for targeted agent generation:
 
 ```bash
 # Generate all agents (default)
-./generate_kiro.sh --output ~/.kiro/agents
+./generators/generate_kiro.sh --output ~/.kiro/agents
 
 # Generate only a specific profession across all themes
-./generate_kiro.sh --output ~/.kiro/agents --profession reviewer
+./generators/generate_kiro.sh --output ~/.kiro/agents --profession reviewer
 
 # Generate only a specific theme across all professions
-./generate_kiro.sh --output ~/.kiro/agents --theme wh40k
+./generators/generate_kiro.sh --output ~/.kiro/agents --theme wh40k
 
 # Generate a single agent (theme + profession)
-./generate_kiro.sh --output ~/.kiro/agents --theme wh40k --profession researcher
+./generators/generate_kiro.sh --output ~/.kiro/agents --theme wh40k --profession researcher
 
 # Generate agents from a custom generic definitions directory
-./generate_kiro.sh --output ~/.kiro/agents --agents-dir /path/to/custom-generics
+./generators/generate_kiro.sh --output ~/.kiro/agents --agents-dir /path/to/custom-generics
 ```
 
 This is useful for incremental builds, testing, or generating a subset of agents.
