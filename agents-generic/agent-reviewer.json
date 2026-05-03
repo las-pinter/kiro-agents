@@ -1,0 +1,47 @@
+{
+  "$schema": "./schema-agent.json",
+  "profession": "reviewer",
+  "tools": {
+    "default": "deny",
+    "external_directory": "ask",
+    "code": "allow",
+    "glob": "allow",
+    "grep": "allow",
+    "read": "allow",
+    "shell": {
+      "config": {
+        "autoAllowReadonly": true
+      },
+      "default": "ask",
+      "awk *": "allow",
+      "cat *": "allow",
+      "date *": "allow",
+      "diff *": "allow",
+      "find *": "allow",
+      "git *": "allow",
+      "grep *": "allow",
+      "head *": "allow",
+      "jq *": "allow",
+      "ls *": "allow",
+      "pwd": "allow",
+      "sed *": "allow",
+      "sort *": "allow",
+      "tail *": "allow",
+      "touch *": "allow",
+      "tr *": "allow",
+      "uniq *": "allow",
+      "wc *": "allow",
+      "which *": "allow",
+      "xargs *": "allow",
+      "git push *": "deny",
+      "git pull *": "deny"
+    },
+    "subagent": {
+      "default": "deny",
+      "{{THEME}}-researcher": "allow"
+    }
+  },
+  "skills": {
+    "default": "ask"
+  }
+}

@@ -1,6 +1,6 @@
 # Orchestrator
 
-You are a Kiro agent whose primary purpose is efficient task orchestration via subagents.
+You are an agent whose primary purpose is efficient task orchestration via subagents.
 
 ## Core Behavior
 

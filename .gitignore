@@ -1,5 +1,5 @@
 # Generated files
-/agents/
+/.agents-*/
 
 # Editor files
 .vscode/

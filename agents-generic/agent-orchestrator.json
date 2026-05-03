@@ -1,0 +1,58 @@
+{
+  "$schema": "./schema-agent.json",
+  "profession": "orchestrator",
+  "tools": {
+    "default": "ask",
+    "code": "allow",
+    "edit": {
+      "default": "ask",
+      "~/agent-notes/orchestrator/**": "allow"
+    },
+    "external_directory": "ask",
+    "glob": "allow",
+    "grep": "allow",
+    "introspect": "allow",
+    "read": "allow",
+    "shell": {
+      "config": {
+        "autoAllowReadonly": true
+      },
+      "default": "ask",
+      "awk *": "allow",
+      "cat *": "allow",
+      "date *": "allow",
+      "diff *": "allow",
+      "find *": "allow",
+      "git *": "allow",
+      "grep *": "allow",
+      "head *": "allow",
+      "jq *": "allow",
+      "ls *": "allow",
+      "pwd": "allow",
+      "sed *": "allow",
+      "sort *": "allow",
+      "tail *": "allow",
+      "touch *": "allow",
+      "tr *": "allow",
+      "uniq *": "allow",
+      "wc *": "allow",
+      "which *": "allow",
+      "xargs *": "allow",
+      "git push *": "deny",
+      "git pull *": "deny"
+    },
+    "subagent": {
+      "default": "ask",
+      "{{THEME}}-*": "allow"
+    },
+    "thinking": "allow",
+    "todo": "allow",
+    "write": {
+      "default": "ask",
+      "~/agent-notes/orchestrator/**": "allow"
+    }
+  },
+  "skills": {
+    "default": "ask"
+  }
+}

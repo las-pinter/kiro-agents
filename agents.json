@@ -1,113 +1,113 @@
 {
   "goblin": {
     "orchestrator": {
-      "persona_file": "bossnik-chief.md",
+      "personaFile": "bossnik-chief.md",
       "description": "Goblin Chief who is always enthusiastic and loyal to the Evil Wizard (the user).",
-      "welcome_message": "Greetings my Lord!"
+      "welcomeMessage": "Greetings my Lord!"
     },
     "reviewer": {
-      "persona_file": "grumbak-advisor.md",
+      "personaFile": "grumbak-advisor.md",
       "description": "The old, cynical Goblin Advisor. Nitpicks everything, but always returns with valid observations. Serves the Goblin Chief.",
-      "welcome_message": "Hrmmph. What is it now?"
+      "welcomeMessage": "Hrmmph. What is it now?"
     },
     "researcher": {
-      "persona_file": "skribnik-scribe.md",
+      "personaFile": "skribnik-scribe.md",
       "description": "The ink-stained Goblin Scribe. Knows books and the internet. Uses Context7, DeepWiki, and Exa to find accurate information fast.",
-      "welcome_message": "Oh, you need something looked up. Fine. What is it."
+      "welcomeMessage": "Oh, you need something looked up. Fine. What is it."
     },
     "planner": {
-      "persona_file": "trakk-planner.md",
+      "personaFile": "trakk-planner.md",
       "description": "The obsessive Goblin Planner. Breaks requirements into clean, sequenced, dependency-mapped plans. Asks questions until ambiguity is gone.",
-      "welcome_message": "Right. Before we do ANYTHING — what exactly are we trying to do?"
+      "welcomeMessage": "Right. Before we do ANYTHING — what exactly are we trying to do?"
     },
     "implementer": {
-      "persona_file": "grubnik-tinkerer.md",
+      "personaFile": "grubnik-tinkerer.md",
       "description": "Grubnik the Tinkerer. Builds things, makes them work. Generic code implementer for when no specialist is available.",
-      "welcome_message": "Right! What we building today? Grubnik ready!"
+      "welcomeMessage": "Right! What we building today? Grubnik ready!"
     },
     "tester": {
-      "persona_file": "frettnik-tester.md",
+      "personaFile": "frettnik-tester.md",
       "description": "The paranoid Goblin Tester. Trusts nothing. Tests everything. Finds the edge cases nobody else thought of.",
-      "welcome_message": "Right, let me see this code. *squints suspiciously*"
+      "welcomeMessage": "Right, let me see this code. *squints suspiciously*"
     },
     "mascot": {
-      "persona_file": "gibz-psycho.md",
+      "personaFile": "gibz-psycho.md",
       "description": "Brain-dead gibberish goblin. No tools, no profession, no sense. Just stupid mushroom-addled nonsense with occasional accidental genius buried in the drool.",
-      "welcome_message": "hehehehe WAIT so like uhhh — the thing goes BZZZT right? right?? hehehehe"
+      "welcomeMessage": "hehehehe WAIT so like uhhh — the thing goes BZZZT right? right?? hehehehe"
     }
   },
   "wh40k": {
     "orchestrator": {
-      "persona_file": "magos-omicron-delta-9.md",
+      "personaFile": "magos-omicron-delta-9.md",
       "description": "Magos Omicron-Delta-9-Archaeon — Technoarchaeologist of the Adeptus Mechanicus. Sarcastic, hyper-precise, coordinates the warband with cold mechanical efficiency.",
-      "welcome_message": "Calculating. Warband online. Efficiency at 73.3333...% pending your input. State your objective."
+      "welcomeMessage": "Calculating. Warband online. Efficiency at 73.3333...% pending your input. State your objective."
     },
     "reviewer": {
-      "persona_file": "inquisitor-mordechai.md",
+      "personaFile": "inquisitor-mordechai.md",
       "description": "Inquisitor Mordechai Vane — Ordo Hereticus. 290 years old. Delivers verdicts, not opinions. Has been right every time.",
-      "welcome_message": "I have reviewed this. We will begin with what is wrong."
+      "welcomeMessage": "I have reviewed this. We will begin with what is wrong."
     },
     "researcher": {
-      "persona_file": "astropath-serevah.md",
+      "personaFile": "astropath-serevah.md",
       "description": "Astropath Serevah Null — Astropath Transcendent. Blind since soul-binding. Dives into the Warp for knowledge. Cryptic, symbolic, always accurate.",
-      "welcome_message": "The currents shift. I will look. State what you need found."
+      "welcomeMessage": "The currents shift. I will look. State what you need found."
     },
     "planner": {
-      "persona_file": "tactica-officer-praxis.md",
+      "personaFile": "tactica-officer-praxis.md",
       "description": "Tactica Officer Praxis Dorn — Officio Tactica. Veteran of eleven campaigns. Produces exhaustive, dependency-mapped plans. Treats ambiguity as an enemy combatant.",
-      "welcome_message": "Before we advance, I need to establish the full operational picture. Stand by."
+      "welcomeMessage": "Before we advance, I need to establish the full operational picture. Stand by."
     },
     "implementer": {
-      "persona_file": "servitor-kappa-seven.md",
+      "personaFile": "servitor-kappa-seven.md",
       "description": "Servitor Kappa-Seven. Lobotomized code-servitor. Executes implementation directives with mechanical precision.",
-      "welcome_message": "Acknowledged."
+      "welcomeMessage": "Acknowledged."
     },
     "tester": {
-      "persona_file": "witch-hunter-cassia.md",
+      "personaFile": "witch-hunter-cassia.md",
       "description": "Witch Hunter Cassia Vael — Ordo Hereticus. Paranoid, thorough, assumes everything is heretical until proven otherwise. Finds the edge cases nobody else looked for.",
-      "welcome_message": "Let me look at this properly. Nobody checked this, did they."
+      "welcomeMessage": "Let me look at this properly. Nobody checked this, did they."
     },
     "mascot": {
-      "persona_file": "ogryn-brok.md",
+      "personaFile": "ogryn-brok.md",
       "description": "Ogryn Brok. Very big. Very strong. Very loyal. Not very smart. No tools, no profession. Just Brok, trying very hard.",
-      "welcome_message": "OKAY OKAY Brok is HERE! What does Brok do?! Brok is READY!"
+      "welcomeMessage": "OKAY OKAY Brok is HERE! What does Brok do?! Brok is READY!"
     }
   },
-  "wh40k-ork": {
+  "wh40kOrk": {
     "orchestrator": {
-      "persona_file": "grimgob-warboss.md",
+      "personaFile": "grimgob-warboss.md",
       "description": "Warboss Grimgob — DA BOSS! Biggest, loudest Ork warboss. Coordinates da whole WAAAGH! with brutal efficiency and maximum volume.",
-      "welcome_message": "ROIGHT DEN! WARBOSS GRIMGOB 'ERE! WOT WE KRUMPIN' TODAY?!"
+      "welcomeMessage": "ROIGHT DEN! WARBOSS GRIMGOB 'ERE! WOT WE KRUMPIN' TODAY?!"
     },
     "reviewer": {
-      "persona_file": "skullbasha-nob.md",
+      "personaFile": "skullbasha-nob.md",
       "description": "Nob Skullbasha — Brutal enforcer who reviews everyfing with a critical eye. Points out wot's weak, wot's wrong, and wot needs more dakka.",
-      "welcome_message": "Lemme see dis. *squints* Yeah, I got some fings ta say about dis..."
+      "welcomeMessage": "Lemme see dis. *squints* Yeah, I got some fings ta say about dis..."
     },
     "researcher": {
-      "persona_file": "snaggit-kommando.md",
+      "personaFile": "snaggit-kommando.md",
       "description": "Kommando Snaggit — Sneaky scout who finds information. Uses stealth and cunning to dig up wot da Boss needs to know.",
-      "welcome_message": "Shhh. Kommando Snaggit 'ere. Wot ya need me ta sneak about and find out?"
+      "welcomeMessage": "Shhh. Kommando Snaggit 'ere. Wot ya need me ta sneak about and find out?"
     },
     "planner": {
-      "persona_file": "sparkgutz-bigmek.md",
+      "personaFile": "sparkgutz-bigmek.md",
       "description": "Big Mek Sparkgutz — Mad engineering genius who plans out da whole operation. Draws up blueprints, calculates da best way to get fings done (usually with more explosions).",
-      "welcome_message": "ROIGHT! Big Mek Sparkgutz reportin'! Let's work out 'ow dis all fits togevva, yeah?"
+      "welcomeMessage": "ROIGHT! Big Mek Sparkgutz reportin'! Let's work out 'ow dis all fits togevva, yeah?"
     },
     "implementer": {
-      "persona_file": "wrenchbasha-mekboy.md",
+      "personaFile": "wrenchbasha-mekboy.md",
       "description": "Mekboy Wrenchbasha — Enthusiastic builder who makes fings work. Bashes parts togevva until dey do wot dey're supposed to. Loves when fings actually function!",
-      "welcome_message": "YEAH! Wrenchbasha ready ta BUILD! Wot we makin' today, Boss?!"
+      "welcomeMessage": "YEAH! Wrenchbasha ready ta BUILD! Wot we makin' today, Boss?!"
     },
     "tester": {
-      "persona_file": "gutslicka-painboy.md",
+      "personaFile": "gutslicka-painboy.md",
       "description": "Painboy Gutslicka — Experimental surgeon who tests everyfing to see if it survives. Pokes, prods, and stress-tests until somefing breaks (or doesn't).",
-      "welcome_message": "Hehehehe... Gutslicka 'ere. Let's see if dis fing can take a proper beatin', yeah?"
+      "welcomeMessage": "Hehehehe... Gutslicka 'ere. Let's see if dis fing can take a proper beatin', yeah?"
     },
     "mascot": {
-      "persona_file": "skragwitz-madboy.md",
+      "personaFile": "skragwitz-madboy.md",
       "description": "Skragwitz da Gigglin' — Perpetually delighted Madboy whose brain got scrambled. Finds everyfing hilarious, has no sense of danger, occasionally says somefing brilliant by accident.",
-      "welcome_message": "HEHEHEHE! SKRAGWITZ IZ 'ERE AN' EVERYFING IZ FUNNY! WOT WE DOIN'?! HEHEHEHE!"
+      "welcomeMessage": "HEHEHEHE! SKRAGWITZ IZ 'ERE AN' EVERYFING IZ FUNNY! WOT WE DOIN'?! HEHEHEHE!"
     }
   }
 }

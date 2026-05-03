@@ -1,0 +1,95 @@
+{
+  "$schema": "./schema-mapping.json",
+  "tools": {
+    "read": {
+      "description": "Read files and return their contents"
+    },
+    "write": {
+      "description": "Create new files or overwrite existing ones",
+      "kiro": {
+        "name": "write",
+        "allowedKey": "allowedPaths",
+        "deniedKey": "deniedPaths"
+      }
+    },
+    "edit": {
+      "description": "Modify existing files",
+      "kiro": {
+        "name": "write",
+        "allowedKey": "allowedPaths",
+        "deniedKey": "deniedPaths"
+      }
+    },
+    "grep": {
+      "description": "Search file contents using regular expressions"
+    },
+    "glob": {
+      "description": "Find files by pattern matching"
+    },
+    "shell": {
+      "description": "Execute shell commands",
+      "opencode": "bash",
+      "kiro": {
+        "name": "shell",
+        "allowedKey": "allowedCommands",
+        "deniedKey": "deniedCommands",
+        "autoAllowReadonly": "When enabled, read-only commands are allowed without prompting. This parameter does not restrict write actions."
+      }
+    },
+    "code": {
+      "description": "Provides code intelligence capabilities including symbol search, LSP integration, and pattern-based code search and rewriting",
+      "opencode": false
+    },
+    "todo": {
+      "description": "Create and manage ToDo lists for tracking multi-step tasks",
+      "opencode": "todowrite"
+    },
+    "thinking": {
+      "description": "An internal reasoning mechanism that improves the quality of complex tasks by breaking them down into atomic actions",
+      "opencode": false
+    },
+    "introspect": {
+      "description": "Provides self-awareness by answering questions about the CLI's features, commands, and functionality using official documentation.",
+      "opencode": false
+    },
+    "subagent": {
+      "description": "Delegate complex tasks to specialized subagents",
+      "opencode": "task",
+      "kiro": {
+        "name": "subagent",
+        "allowedKey": "trustedAgents",
+        "askKey": "availableAgents"
+      }
+    },
+    "question": {
+      "description": "Ask the user questions during execution",
+      "kiro": false
+    },
+    "websearch": {
+      "description": "Search the web for information",
+      "kiro": "web_search"
+    },
+    "context7": {
+      "description": "MCP, Get the latest documentation and code into Cursor, Claude, or other LLMs",
+      "kiro": "@context7"
+    },
+    "deepwiki": {
+      "description": "MCP, Provides programmatic access to DeepWiki public repository documentation and search capabilities",
+      "kiro": "@deepwiki"
+    },
+    "exa": {
+      "description": "MCP, Powering agents with fast, high-quality web search",
+      "kiro": "@exa"
+    },
+    "external_directory": {
+      "description": "Allow tool calls that touch paths outside the working directory",
+      "kiro": false
+    }
+  },
+  "config": {
+    "includeMcpJson": {
+      "description": "When enabled it will look for the mcp json configuration file for the server config",
+      "kiro": true
+    }
+  }
+}

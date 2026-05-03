@@ -1,9 +1,0 @@
-{
-  "name": "{{AGENT_NAME}}",
-  "description": "{{DESCRIPTION}}",
-  "prompt": "file://~/.kiro/personas/{{THEME}}/{{PERSONA_FILE}}",
-  "resources": [],
-  "welcomeMessage": "{{WELCOME_MESSAGE}}",
-  "tools": [],
-  "allowedTools": []
-}
