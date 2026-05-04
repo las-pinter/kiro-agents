@@ -6,13 +6,15 @@
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 GENERATE_KIRO_SCRIPT="${SCRIPT_DIR}/../generate_kiro.sh"
+GENERATE_OPENCODE_SCRIPT="${SCRIPT_DIR}/../generate_opencode.sh"
 
 TEST_GENERIC_AGENTS_DIR="${SCRIPT_DIR}/generics"
 TEST_AGENTS_JSON="${SCRIPT_DIR}/test-agents.json"
 TEST_OUTPUT_DIR="${SCRIPT_DIR}/.test-output/"
 TEST_REFERENCE_DIR="${SCRIPT_DIR}/reference/"
+TEST_SKILLS_DIR="${SCRIPT_DIR}/skills"
 
-echo "Generating test agents from templates..."
+echo "Generating kiro test agents from templates..."
 if [[ -x "${GENERATE_KIRO_SCRIPT}" ]]; then
     "$GENERATE_KIRO_SCRIPT" \
         --output "$TEST_OUTPUT_DIR/test-kiro-agents" \
@@ -20,7 +22,20 @@ if [[ -x "${GENERATE_KIRO_SCRIPT}" ]]; then
         --agents-json "$TEST_AGENTS_JSON"
     echo "  agents generated"
 else
-    echo "Rrror: generate-kiro.sh not found or not executable at ${GENERATE_KIRO_SCRIPT}"
+    echo "Rrror: generate_kiro.sh not found or not executable at ${GENERATE_KIRO_SCRIPT}"
+    exit 1
+fi
+
+echo "Generating opencode test agents from templates..."
+if [[ -x "${GENERATE_KIRO_SCRIPT}" ]]; then
+    "$GENERATE_OPENCODE_SCRIPT" \
+        --output "$TEST_OUTPUT_DIR/test-opencode-agents" \
+        --agents-dir "$TEST_GENERIC_AGENTS_DIR" \
+        --agents-json "$TEST_AGENTS_JSON" \
+        --skills-dir "$TEST_SKILLS_DIR"
+    echo "  agents generated"
+else
+    echo "Rrror: generate_opencode.sh not found or not executable at ${GENERATE_OPENCODE_SCRIPT}"
     exit 1
 fi
 
