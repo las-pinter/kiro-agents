@@ -47,5 +47,10 @@
   },
   "skills": {
     "default": "ask"
+  },
+  "config": {
+    "mode": "all",
+    "temperature": 0.1,
+    "top_p": 0.95
   }
 }

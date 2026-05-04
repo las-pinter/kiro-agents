@@ -44,6 +44,9 @@
     "default": "ask"
   },
   "config": {
-    "includeMcpJson": true
+    "includeMcpJson": true,
+    "mode": "all",
+    "temperature": 0.0,
+    "top_p": 0.95
   }
 }

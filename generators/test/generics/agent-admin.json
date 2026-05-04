@@ -19,8 +19,7 @@
     },
     "subagent": {
       "default": "ask",
-      "test-admin": "allow",
-      "test-mega": "allow"
+      "{{THEME}}-*": "allow"
     },
     "todo": "allow"
   },

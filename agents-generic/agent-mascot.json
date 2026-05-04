@@ -3,5 +3,10 @@
   "profession": "mascot",
   "tools": {
     "default": "deny"
+  },
+  "config": {
+    "mode": "all",
+    "temperature": 1.0,
+    "top_p": 0.95
   }
 }
