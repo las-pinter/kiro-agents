@@ -9,5 +9,9 @@
   },
   "skills": {
     "default": "deny"
+  },
+  "config": {
+    "mode": "all",
+    "temperature": 0.4
   }
 }

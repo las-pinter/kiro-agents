@@ -26,5 +26,9 @@
   },
   "skills": {
     "default": "ask"
+  },
+  "config": {
+    "mode": "subagent",
+    "top_p": 0.95
   }
 }

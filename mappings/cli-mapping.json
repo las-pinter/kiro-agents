@@ -38,7 +38,7 @@
     },
     "code": {
       "description": "Provides code intelligence capabilities including symbol search, LSP integration, and pattern-based code search and rewriting",
-      "opencode": false
+      "kiro": true
     },
     "todo": {
       "description": "Create and manage ToDo lists for tracking multi-step tasks",
@@ -46,11 +46,11 @@
     },
     "thinking": {
       "description": "An internal reasoning mechanism that improves the quality of complex tasks by breaking them down into atomic actions",
-      "opencode": false
+      "kiro": true
     },
     "introspect": {
       "description": "Provides self-awareness by answering questions about the CLI's features, commands, and functionality using official documentation.",
-      "opencode": false
+      "kiro": true
     },
     "subagent": {
       "description": "Delegate complex tasks to specialized subagents",
@@ -63,7 +63,7 @@
     },
     "question": {
       "description": "Ask the user questions during execution",
-      "kiro": false
+      "opencode": true
     },
     "websearch": {
       "description": "Search the web for information",
@@ -83,13 +83,25 @@
     },
     "external_directory": {
       "description": "Allow tool calls that touch paths outside the working directory",
-      "kiro": false
+      "opencode": true
     }
   },
   "config": {
     "includeMcpJson": {
       "description": "When enabled it will look for the mcp json configuration file for the server config",
       "kiro": true
+    },
+    "mode": {
+      "description": "determine how the agent can be used: primary or subagent",
+      "opencode": true
+    },
+    "temperature": {
+      "description": "Control the randomness and creativity of the LLM’s responses",
+      "opencode": true
+    },
+    "top_p": {
+      "description": "Control response diversity",
+      "opencode": true
     }
   }
 }

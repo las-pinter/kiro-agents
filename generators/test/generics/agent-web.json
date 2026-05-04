@@ -13,6 +13,7 @@
     "default": "ask"
   },
   "config": {
-    "includeMcpJson": true
+    "includeMcpJson": true,
+    "mode": "all"
   }
 }

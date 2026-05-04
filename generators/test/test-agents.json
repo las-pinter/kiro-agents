@@ -5,11 +5,6 @@
       "description": "Minimal agent — only read, grep, glob.",
       "welcomeMessage": "I see. I hear. I find."
     },
-    "basic": {
-      "personaFile": "test-goblin.md",
-      "description": "Simple agent — full read access, no write permissions.",
-      "welcomeMessage": "Give me the files and I will look at them."
-    },
     "builder": {
       "personaFile": "test-goblin.md",
       "description": "Build agent — can modify files but needs permission.",
