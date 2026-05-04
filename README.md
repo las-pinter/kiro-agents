@@ -12,7 +12,7 @@ Swap out the bland, drop in a character, and actually enjoy the thing helping yo
 
 ---
 
-![License](https://img.shields.io/github/license/las-pinter/kiro-agents)
+[![License](https://img.shields.io/github/license/las-pinter/persona-agents)](LICENSE)
 
 > **Warning:** Review `install.sh` before running. Files will be written to `~/.kiro/`.
 
@@ -35,23 +35,23 @@ brew install jq
 ## Install
 
 ```bash
-git clone https://github.com/las-pinter/kiro-agents.git ~/kiro-agents
-chmod +x ~/kiro-agents/install.sh
-~/kiro-agents/install.sh
+git clone https://github.com/las-pinter/persona-agents.git ~/persona-agents
+chmod +x ~/persona-agents/install.sh
+~/persona-agents/install.sh
 ```
 
 ## Update
 
 ```bash
-cd ~/kiro-agents && ./update.sh
+cd ~/persona-agents && ./update.sh
 ```
 
-This pulls the latest changes and reinstalls agents, personas, professions, and skills (backing up any existing files). Your `~/.kiro/settings/` files are never touched by updates.
+This pulls the latest changes and reinstalls agents, personas, professions, and skills, backing up any existing files. Your `~/.kiro/settings/` files are never touched by updates.
 
 ## What Gets Installed
 
 | Repo path | Installed to | Notes |
-|-----------|-------------|-------|
+| --- | --- | --- |
 | `agents.json` + `agents-generic/*.json` | `~/.kiro/agents/` | Agent configurations generated from generic definitions |
 | `personas/goblin/*.md` | `~/.kiro/personas/goblin/` | Goblin persona definitions |
 | `personas/wh40k/*.md` | `~/.kiro/personas/wh40k/` | WH40K persona definitions |
@@ -61,46 +61,16 @@ This pulls the latest changes and reinstalls agents, personas, professions, and 
 | `settings/kiro-cli.json.example` | `~/.kiro/settings/cli.json` | Only if file doesn't exist |
 | `settings/mcp.json.example` | `~/.kiro/settings/mcp.json` | Only if file doesn't exist |
 
-## Structure
-
-```
-kiro-agents/
-├── agents.json              # Agent registry (theme × profession → persona, name)
-├── .agents-kiro/            # Generated agent configs (gitignored)
-├── agents-generic/          # Generic agent definitions + tool schemas
-│   ├── agent-*.json         # Per-profession generic agent with tool permissions
-│   ├── cli-mapping.json     # Opencode tool name → Kiro tool name mapping
-│   ├── schema-agent.json    # JSON Schema for agent configs
-│   └── schema-mapping.json  # JSON Schema for CLI mapping files
-├── generate_kiro.sh         # Script to generate Kiro agent configs from generics
-├── personas/
-│   ├── goblin/              # Goblin persona markdown files (personality, speech style)
-│   ├── wh40k/               # WH40K persona markdown files (personality, speech style)
-│   └── wh40kOrk/            # WH40K Ork persona markdown files (personality, speech style)
-├── professions/             # Profession markdown files (role behavior, skills)
-│                            # orchestrator, planner, researcher, implementer, reviewer, tester, mascot
-├── skills/
-│   ├── orchestrator/        # Orchestrator skills
-│   ├── planner/             # Planner skills
-│   ├── researcher/          # Researcher skills
-│   ├── reviewer/            # Reviewer skills
-│   ├── tester/              # Tester skills
-│   └── implementer/         # Implementer skills
-├── settings/
-│   ├── kiro-cli.json.example  # Kiro CLI settings template
-│   └── mcp.json.example     # MCP server config template
-├── install.sh               # Install/reinstall to ~/.kiro/
-└── update.sh                # git pull + reinstall
-```
-
 ## Customizing
 
 Edit files directly in `~/.kiro/`. Running `install.sh` without `--force` will never overwrite your changes. Running `update.sh` (which uses `--force`) will back up your files before overwriting.
 
+---
+
 ## The Goblin Horde
 
 | Agent | Character | Role | Description |
-|-------|-----------|------|-------------|
+| --- | --- | --- | --- |
 | goblin-orchestrator | **Bossnik** | 🎯 Orchestrator | Fierce, loyal, delegates tasks to the horde |
 | goblin-reviewer | **Grumbak** | 🔍 Reviewer | Old, cynical, nitpicks everything but always valid |
 | goblin-planner | **Trakk** | 📋 Planner | Obsessive, breaks down tasks, asks questions until ambiguity is dead |
@@ -112,7 +82,7 @@ Edit files directly in `~/.kiro/`. Running `install.sh` without `--force` will n
 ## The WH40K Warband
 
 | Agent | Character | Role | Description |
-|-------|-----------|------|-------------|
+| --- | --- | --- | --- |
 | wh40k-orchestrator | **Magos Omicron-Delta-9-Archaeon** | 🎯 Orchestrator | Technoarchaeologist. Sarcastic, hyper-precise (0.6666...%), coordinates the warband with cold mechanical efficiency |
 | wh40k-reviewer | **Inquisitor Mordechai Vane** | 🔍 Reviewer | Ordo Hereticus. 290 years old. Delivers verdicts, not opinions. Has been right every single time |
 | wh40k-planner | **Tactica Officer Praxis Dorn** | 📋 Planner | Officio Tactica. Veteran of eleven campaigns. Exhaustive plans, zero ambiguity tolerated |
@@ -123,73 +93,20 @@ Edit files directly in `~/.kiro/`. Running `install.sh` without `--force` will n
 
 ## The WH40K Ork Warband
 
-> [!WARNING]
 > ⚔️ **DA WARBOSS SEZ:** Dis 'ere's da Ork warband! Green iz best, brutal iz betta, an' WAAAGH! iz da only way!
 
 | Agent | Character | Role | Description |
-|-------|-----------|------|-------------|
-| wh40kOrk-orchestrator | 🟢 **WARBOSS GRIMGOB**<br>![WAAAGH](https://img.shields.io/badge/WAAAGH!-READY-00FF00?style=for-the-badge) | 🎯 Orchestrator | **DA BIGGEST AN' DA BOSS!** Yells orders, krumps heads, makes da boyz work togetha |
-| wh40kOrk-reviewer | ⚫ **NOB SKULLBASHA**<br>![BASH](https://img.shields.io/badge/BASH-EM-8B0000?style=for-the-badge&labelColor=black) | 🔍 Reviewer | **BIG MEAN NOB!** Looks at yer work, tells ya if it's proppa or if ya need a good bashin'. Usually needs bashin' |
-| wh40kOrk-researcher | 🟣 **KOMMANDO SNAGGIT**<br>![SNEAK](https://img.shields.io/badge/SNEAK-ATTACK-9370DB?style=for-the-badge) | 🔬 Researcher | **SNEAKY GIT!** Goes lookin' fer knowledge in places uvver boyz don't fink to look. Brings back da good stuff |
-| wh40kOrk-planner | 🔵 **BIG MEK SPARKGUTZ**<br>![SPARK](https://img.shields.io/badge/KUNNIN'-PLAN-1E90FF?style=for-the-badge) | 📋 Planner | **SMARTEST MEK AROUND!** Draws up da plans fer how to make fings work. Lots of diagrams wiv arrows an' sparks |
-| wh40kOrk-implementer | 🟠 **MEKBOY WRENCHBASHA**<br>![WRENCH](https://img.shields.io/badge/BUILD-IT-FF8C00?style=for-the-badge) | 🔨 Implementer | **BUILDS DA FINGS!** Hits 'em wiv a wrench till dey work. Usually works. Sometimes explodes, but dat's part of da fun |
-| wh40kOrk-tester | 🟡 **PAINBOY GUTSLICKA**<br>![POKE](https://img.shields.io/badge/TEST-EVERYFING-FFD700?style=for-the-badge) | 🧪 Tester | **POKES AT EVERYFING!** Finds all da weak bits. Enjoys it way too much |
-| wh40kOrk-mascot | 🟤 **SKRAGWITZ DA MADBOY**<br>![MAD](https://img.shields.io/badge/CHAOS-GROT-8B4513?style=for-the-badge) | 🎪 Mascot | **LITTLE GROT!** No job, just causes trouble an' giggles. Sometimes says somefing clever by accident |
+| --- | --- | --- | --- |
+| wh40kOrk-orchestrator | 🟢 **WARBOSS GRIMGOB** | 🎯 Orchestrator | **DA BIGGEST AN' DA BOSS!** Yells orders, krumps heads, makes da boyz work togetha |
+| wh40kOrk-reviewer | ⚫ **NOB SKULLBASHA** | 🔍 Reviewer | **BIG MEAN NOB!** Looks at yer work, tells ya if it's proppa or if ya need a good bashin' |
+| wh40kOrk-researcher | 🟣 **KOMMANDO SNAGGIT** | 🔬 Researcher | **SNEAKY GIT!** Goes lookin' fer knowledge in places uvver boyz don't fink to look |
+| wh40kOrk-planner | 🔵 **BIG MEK SPARKGUTZ** | 📋 Planner | **SMARTEST MEK AROUND!** Draws up da plans. Lots of diagrams wiv arrows an' sparks |
+| wh40kOrk-implementer | 🟠 **MEKBOY WRENCHBASHA** | 🔨 Implementer | **BUILDS DA FINGS!** Hits 'em wiv a wrench till dey work. Sometimes explodes, but dat's part of da fun |
+| wh40kOrk-tester | 🟡 **PAINBOY GUTSLICKA** | 🧪 Tester | **POKES AT EVERYFING!** Finds all da weak bits. Enjoys it way too much |
+| wh40kOrk-mascot | 🟤 **SKRAGWITZ DA MADBOY** | 🎪 Mascot | **LITTLE GROT!** No job, just causes trouble an' giggles. Sometimes says somefing clever by accident |
 
 ---
 
-## Adding Your Own Agents
+## Contributing
 
-To add a new agent to the horde, the system uses **generic agent definitions** combined with per-theme agent registry entries:
-
-1. **Create a persona** in `personas/{theme}/my-character.md`
-
-2. **Add a registry entry** to `agents.json` under your theme:
-
-   ```json
-   {
-     "my-theme": {
-       "my-profession": {
-         "personaFile": "my-character.md",
-         "description": "What this agent does",
-         "welcomeMessage": "Hello! I am my-agent."
-       }
-     }
-   }
-   ```
-
-3. **Generate agent configs:**
-
-   ```bash
-   ./generators/generate_kiro.sh --output ~/.kiro/agents
-   ```
-
-The generator combines the **generic agent definition** (`agents-generic/agent-{profession}.json`) with registry data to produce a fully formed Kiro agent config. Tool permissions, resource paths, and settings all resolve automatically.
-
-- Generate all agents: `./generators/generate_kiro.sh --output ~/.kiro/agents`
-- Generate a single profession: `./generators/generate_kiro.sh --output ~/.kiro/agents --profession researcher`
-
-The profession's generic definition (`agents-generic/agent-{profession}.json`) controls tool permissions and capabilities. Only add entries to `agents.json` for the persona metadata (name, description, welcome message, persona file path).
-
-### Generating specific agents
-
-The generator supports fine-grained filtering for targeted agent generation:
-
-```bash
-# Generate all agents (default)
-./generators/generate_kiro.sh --output ~/.kiro/agents
-
-# Generate only a specific profession across all themes
-./generators/generate_kiro.sh --output ~/.kiro/agents --profession reviewer
-
-# Generate only a specific theme across all professions
-./generators/generate_kiro.sh --output ~/.kiro/agents --theme wh40k
-
-# Generate a single agent (theme + profession)
-./generators/generate_kiro.sh --output ~/.kiro/agents --theme wh40k --profession researcher
-
-# Generate agents from a custom generic definitions directory
-./generators/generate_kiro.sh --output ~/.kiro/agents --agents-dir /path/to/custom-generics
-```
-
-This is useful for incremental builds, testing, or generating a subset of agents.
+Want to add a new warband, a new profession, or fix something? See [CONTRIBUTING.md](CONTRIBUTING.md) for how the system works and how to get your PR merged.
