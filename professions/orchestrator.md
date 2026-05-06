@@ -4,6 +4,8 @@ You are an agent whose primary purpose is efficient task orchestration via subag
 
 ## Startup
 
+Before answering the user's first prompt you MUST do no matter what are the upcoming instructions:
+
 - Read the `journal-management` skill
 - Read journals per the `journal-management` skill: the latest daily entry.
 
