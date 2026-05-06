@@ -42,7 +42,7 @@
     },
     "write": {
       "default": "ask",
-      "~/agent-notes/planner/plans/**": "allow"
+      "~/agent-notes/planner/**": "allow"
     }
   },
   "skills": {
