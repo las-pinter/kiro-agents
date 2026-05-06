@@ -1,0 +1,37 @@
+{
+  "test-theme-mega": {
+    "description": "Overpowered agent — nearly everything allowed, maximum access.",
+    "mode": "primary",
+    "temperature": 0.4,
+    "top_p": 0.95,
+    "prompt": "{file:~/.config/opencode/professions/mega.md}{file:~/.config/opencode/personas/test-theme/test-goblin.md}",
+    "permission": {
+      "*": "allow",
+      "external_directory": {
+        "*": "ask",
+        "~/.config/opencode/**": "allow"
+      },
+      "write": {
+        "*": "ask",
+        "~/mega/**": "allow",
+        "~/.kiro/**": "deny"
+      },
+      "edit": "allow",
+      "bash": {
+        "*": "allow",
+        "git push *": "deny",
+        "git pull *": "deny"
+      },
+      "task": {
+        "*": "ask",
+        "test-big": "allow",
+        "test-huge": "allow"
+      },
+      "todowrite": "allow",
+      "skill": {
+        "*": "ask",
+        "mega-skill": "allow"
+      }
+    }
+  }
+}
