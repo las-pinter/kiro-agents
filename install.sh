@@ -5,20 +5,23 @@ set -euo pipefail
 # install.sh — Install kiro-agents and OpenCode agents
 #
 # Usage:
-#   ./install.sh [--force] [--dry-run] [--help]
+#   ./install.sh [--force] [--dry-run] [--target kiro|opencode|all] [--help]
 #
 # Options:
-#   --force       Overwrite existing files (backs up originals)
-#   --dry-run     Show what would be done without actually doing it
-#   --help, -h    Show this help message
+#   --force          Overwrite existing files (backs up originals)
+#   --dry-run        Show what would be done without actually doing it
+#   --target TARGET  Which target to install: kiro, opencode, all (default: all)
+#   --help, -h       Show this help message
 # ============================================================================
 
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
 DEST="$HOME/.kiro"
 BACKUP_DIR="$HOME/.kiro-bak"
-OPENCODE_CONFIG="$HOME/.config/opencode/opencode.json"
+OPENCODE_DEST="$HOME/.config/opencode"
+OPENCODE_CONFIG="$OPENCODE_DEST/opencode.json"
 FORCE=false
 DRY_RUN=false
+TARGET="all"
 
 # ---------------------------------------------------------------------------
 # Temp cleanup trap
@@ -54,15 +57,29 @@ usage() {
     echo "Usage: $0 [OPTIONS]"
     echo ""
     echo "Options:"
-    echo "  --force       Overwrite existing files (backs up originals)"
-    echo "  --dry-run     Show what would be done without doing it"
-    echo "  --help, -h    Show this help message"
+    echo "  --force          Overwrite existing files (backs up originals)"
+    echo "  --dry-run        Show what would be done without doing it"
+    echo "  --target TARGET  Which target to install: kiro, opencode, all (default: all)"
+    echo "  --help, -h       Show this help message"
 }
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --force)   FORCE=true; shift ;;
         --dry-run) DRY_RUN=true; shift ;;
+        --target)
+            if [[ -z "$2" || "$2" == --* ]]; then
+                echo "Error: --target requires a value (kiro, opencode, or all)." >&2
+                exit 1
+            fi
+            case "$2" in
+                kiro|opencode|all) TARGET="$2"; shift 2 ;;
+                *)
+                    echo "Error: --target must be 'kiro', 'opencode', or 'all', got '$2'." >&2
+                    exit 1
+                    ;;
+            esac
+            ;;
         --help|-h) usage; exit 0 ;;
         *)
             echo "Unknown option: $1" >&2
@@ -168,142 +185,158 @@ merge_json_into() {
 # Kiro agent generation & installation
 # ---------------------------------------------------------------------------
 
-echo "Generating kiro agents from templates..."
-kiro_generator_script="$REPO_DIR/generators/generate_kiro.sh"
-if [[ -x "$kiro_generator_script" ]]; then
-    run "$kiro_generator_script" --output "$DEST/agents"
-    echo "  kiro agents generated"
-else
-    echo "  warning: generate_kiro.sh not found or not executable" >&2
+if [[ "$TARGET" == "kiro" || "$TARGET" == "all" ]]; then
+    echo "Generating kiro agents from templates..."
+    kiro_generator_script="$REPO_DIR/generators/generate_kiro.sh"
+    if [[ -x "$kiro_generator_script" ]]; then
+        run "$kiro_generator_script" --output "$DEST/agents"
+        echo "  kiro agents generated"
+    else
+        echo "  warning: generate_kiro.sh not found or not executable" >&2
+    fi
+
+    echo ""
+    echo "Installing kiro-agents to $DEST ..."
+
+    for dir in personas professions skills; do
+        while IFS= read -r -d '' f; do
+            rel="${f#"$REPO_DIR"/}"
+            copy_file "$f" "$DEST/$rel"
+        done < <(find "$REPO_DIR/$dir" -type f -print0)
+    done
+
+    # Settings: only install if not already present — never overwrite user customizations
+    copy_if_missing "$REPO_DIR/settings/kiro-cli.json.example" "$DEST/settings/cli.json"
+    copy_if_missing "$REPO_DIR/settings/mcp.json.example" "$DEST/settings/mcp.json"
 fi
 
-echo ""
-echo "Installing kiro-agents to $DEST ..."
-
-for dir in personas professions skills; do
-    while IFS= read -r -d '' f; do
-        rel="${f#"$REPO_DIR"/}"
-        copy_file "$f" "$DEST/$rel"
-    done < <(find "$REPO_DIR/$dir" -type f -print0)
-done
-
-# Settings: only install if not already present — never overwrite user customizations
-copy_if_missing "$REPO_DIR/settings/kiro-cli.json.example" "$DEST/settings/cli.json"
-copy_if_missing "$REPO_DIR/settings/mcp.json.example" "$DEST/settings/mcp.json"
-
 # ---------------------------------------------------------------------------
-# OpenCode agent generation & merge
+# OpenCode agent generation, file installation & merge
 # ---------------------------------------------------------------------------
 
-echo ""
-echo "Generating OpenCode agents..."
+if [[ "$TARGET" == "opencode" || "$TARGET" == "all" ]]; then
 
-opencode_generator_script="$REPO_DIR/generators/generate_opencode.sh"
-if [[ -x "$opencode_generator_script" ]]; then
-    if [[ "$DRY_RUN" == true ]]; then
-        echo "  (dry-run) would run opencode generator..."
-    else
-        opencode_gen_dir=$(mktemp -d)
-        CLEANUP_DIRS+=("$opencode_gen_dir")
+    # -- Copy personas, professions, skills to OpenCode config folder --
+    echo ""
+    echo "Installing OpenCode resource files to $OPENCODE_DEST ..."
 
-        "$opencode_generator_script" \
-            --output "$opencode_gen_dir" \
-            --agents-dir "$REPO_DIR/agents-generic" \
-            --agents-json "$REPO_DIR/agents.json" \
-            --skills-dir "$REPO_DIR/skills"
+    for dir in personas professions skills; do
+        while IFS= read -r -d '' f; do
+            rel="${f#"$REPO_DIR"/}"
+            copy_file "$f" "$OPENCODE_DEST/$rel"
+        done < <(find "$REPO_DIR/$dir" -type f -print0)
+    done
 
-        # Combine all generated agent JSONs into one
-        # Use find to avoid nullglob/failglob issues
-        if [[ -n "$(find "$opencode_gen_dir" -maxdepth 1 -name '*.json' -print -quit)" ]]; then
-            combined_agents=$(mktemp)
-            CLEANUP_FILES+=("$combined_agents")
-            jq -s 'add' "$opencode_gen_dir"/*.json > "$combined_agents"
+    # -- Generate and merge OpenCode agents --
+    echo ""
+    echo "Generating OpenCode agents..."
 
-            if [[ -f "$OPENCODE_CONFIG" ]]; then
-                merge_json_into "$combined_agents" "$OPENCODE_CONFIG" "agent"
+    opencode_generator_script="$REPO_DIR/generators/generate_opencode.sh"
+    if [[ -x "$opencode_generator_script" ]]; then
+        if [[ "$DRY_RUN" == true ]]; then
+            echo "  (dry-run) would run opencode generator..."
+        else
+            opencode_gen_dir=$(mktemp -d)
+            CLEANUP_DIRS+=("$opencode_gen_dir")
+
+            "$opencode_generator_script" \
+                --output "$opencode_gen_dir" \
+                --agents-dir "$REPO_DIR/agents-generic" \
+                --agents-json "$REPO_DIR/agents.json" \
+                --skills-dir "$REPO_DIR/skills"
+
+            # Combine all generated agent JSONs into one
+            # Use find to avoid nullglob/failglob issues
+            if [[ -n "$(find "$opencode_gen_dir" -maxdepth 1 -name '*.json' -print -quit)" ]]; then
+                combined_agents=$(mktemp)
+                CLEANUP_FILES+=("$combined_agents")
+                jq -s 'add' "$opencode_gen_dir"/*.json > "$combined_agents"
+
+                if [[ -f "$OPENCODE_CONFIG" ]]; then
+                    merge_json_into "$combined_agents" "$OPENCODE_CONFIG" "agent"
+                else
+                    echo "  warning: $OPENCODE_CONFIG not found — run 'opencode init' first" >&2
+                fi
             else
-                echo "  warning: $OPENCODE_CONFIG not found — run 'opencode init' first" >&2
+                echo "  warning: no agent files generated" >&2
+            fi
+        fi
+        echo "  OpenCode agents generated and merged"
+    else
+        echo "  warning: generate_opencode.sh not found or not executable" >&2
+    fi
+
+    # -- Merge MCP settings into OpenCode config --
+    if [[ -f "$OPENCODE_CONFIG" ]]; then
+        echo ""
+        echo "Merging MCP settings into OpenCode config..."
+
+        mcp_example="$REPO_DIR/settings/mcp.json.example"
+        if [[ -f "$mcp_example" ]]; then
+            if [[ "$DRY_RUN" == true ]]; then
+                echo "  (dry-run) would merge MCP settings from $mcp_example"
+            else
+                mcp_tmp=$(mktemp)
+                CLEANUP_FILES+=("$mcp_tmp")
+                # Transform mcpServers format → opencode mcp format
+                jq '.mcpServers | to_entries | map({key: .key, value: {type: "remote", url: .value.url, enabled: true}}) | from_entries' \
+                    "$mcp_example" > "$mcp_tmp"
+                merge_json_into "$mcp_tmp" "$OPENCODE_CONFIG" "mcp"
             fi
         else
-            echo "  warning: no agent files generated" >&2
+            echo "  warning: MCP example file not found at $mcp_example" >&2
         fi
     fi
-    echo "  OpenCode agents generated and merged"
-else
-    echo "  warning: generate_opencode.sh not found or not executable" >&2
 fi
 
 # ---------------------------------------------------------------------------
-# Merge MCP settings into OpenCode config
+# Shell aliases (kiro)
 # ---------------------------------------------------------------------------
 
-if [[ -f "$OPENCODE_CONFIG" ]]; then
+if [[ "$TARGET" == "kiro" || "$TARGET" == "all" ]]; then
     echo ""
-    echo "Merging MCP settings into OpenCode config..."
+    echo "Installing kiro-cli aliases ..."
 
-    mcp_example="$REPO_DIR/settings/mcp.json.example"
-    if [[ -f "$mcp_example" ]]; then
-        if [[ "$DRY_RUN" == true ]]; then
-            echo "  (dry-run) would merge MCP settings from $mcp_example"
+    install_alias() {
+        local name="$1" cmd="$2" rc="$3"
+        local line="alias ${name}='${cmd}'"
+        if grep -qF "$line" "$rc" 2>/dev/null; then
+            echo "  skipped (exists): $name in $rc"
         else
-            mcp_tmp=$(mktemp)
-            CLEANUP_FILES+=("$mcp_tmp")
-            # Transform mcpServers format → opencode mcp format
-            jq '.mcpServers | to_entries | map({key: .key, value: {type: "remote", url: .value.url, enabled: true}}) | from_entries' \
-                "$mcp_example" > "$mcp_tmp"
-            merge_json_into "$mcp_tmp" "$OPENCODE_CONFIG" "mcp"
+            if [[ "$DRY_RUN" == true ]]; then
+                echo "  (dry-run) would add alias $name to $rc"
+            else
+                printf '\n%s\n' "$line" >> "$rc"
+                echo "  installed alias: $name in $rc"
+            fi
         fi
-    else
-        echo "  warning: MCP example file not found at $mcp_example" >&2
+    }
+
+    ALIAS_ENTRIES=(
+        "kiro-goblin:kiro-cli chat --agent goblin-orchestrator"
+        "kiro-wh40k:kiro-cli chat --agent wh40k-orchestrator"
+        "kiro-wh40kOrk:kiro-cli chat --agent wh40kOrk-orchestrator"
+    )
+
+    install_aliases_for_rc() {
+        local rc="$1"
+        for entry in "${ALIAS_ENTRIES[@]}"; do
+            local name="${entry%%:*}"
+            local cmd="${entry#*:}"
+            install_alias "$name" "$cmd" "$rc"
+        done
+    }
+
+    if [[ -f "$HOME/.zshrc" ]]; then
+        install_aliases_for_rc "$HOME/.zshrc"
     fi
-fi
 
-# ---------------------------------------------------------------------------
-# Shell aliases
-# ---------------------------------------------------------------------------
-
-echo ""
-echo "Installing kiro-cli aliases ..."
-
-install_alias() {
-    local name="$1" cmd="$2" rc="$3"
-    local line="alias ${name}='${cmd}'"
-    if grep -qF "$line" "$rc" 2>/dev/null; then
-        echo "  skipped (exists): $name in $rc"
-    else
-        if [[ "$DRY_RUN" == true ]]; then
-            echo "  (dry-run) would add alias $name to $rc"
-        else
-            printf '\n%s\n' "$line" >> "$rc"
-            echo "  installed alias: $name in $rc"
+    if [[ -f "$HOME/.bashrc" ]]; then
+        if [[ "$DRY_RUN" != true ]]; then
+            touch "$HOME/.bash_aliases"
         fi
+        install_aliases_for_rc "$HOME/.bash_aliases"
     fi
-}
-
-ALIAS_ENTRIES=(
-    "kiro-goblin:kiro-cli chat --agent goblin-orchestrator"
-    "kiro-wh40k:kiro-cli chat --agent wh40k-orchestrator"
-    "kiro-wh40kOrk:kiro-cli chat --agent wh40kOrk-orchestrator"
-)
-
-install_aliases_for_rc() {
-    local rc="$1"
-    for entry in "${ALIAS_ENTRIES[@]}"; do
-        local name="${entry%%:*}"
-        local cmd="${entry#*:}"
-        install_alias "$name" "$cmd" "$rc"
-    done
-}
-
-if [[ -f "$HOME/.zshrc" ]]; then
-    install_aliases_for_rc "$HOME/.zshrc"
-fi
-
-if [[ -f "$HOME/.bashrc" ]]; then
-    if [[ "$DRY_RUN" != true ]]; then
-        touch "$HOME/.bash_aliases"
-    fi
-    install_aliases_for_rc "$HOME/.bash_aliases"
 fi
 
 # ---------------------------------------------------------------------------
