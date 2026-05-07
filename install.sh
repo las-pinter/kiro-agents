@@ -21,6 +21,8 @@ OPENCODE_CONFIG="$OPENCODE_DEST/opencode.json"
 FORCE=false
 DRY_RUN=false
 TARGET="all"
+THEME=""
+PROFESSION=""
 
 # ---------------------------------------------------------------------------
 # Temp cleanup trap
@@ -56,10 +58,12 @@ usage() {
     echo "Usage: $0 [OPTIONS]"
     echo ""
     echo "Options:"
-    echo "  --force          Overwrite existing files"
-    echo "  --dry-run        Show what would be done without doing it"
-    echo "  --target TARGET  Which target to install: kiro, opencode, all (default: all)"
-    echo "  --help, -h       Show this help message"
+    echo "  --force                Overwrite existing files"
+    echo "  --dry-run              Show what would be done without doing it"
+    echo "  --target TARGET        Which target to install: kiro, opencode, all (default: all)"
+    echo "  --theme THEME          Theme to generate (optional, filters by theme)"
+    echo "  --profession PROFESSION Profession to generate (optional, filters by profession)"
+    echo "  --help, -h             Show this help message"
 }
 
 while [[ $# -gt 0 ]]; do
@@ -82,6 +86,30 @@ while [[ $# -gt 0 ]]; do
             exit 1
         fi
         TARGET="$2"
+        shift 2
+        ;;
+    --profession=*)
+        PROFESSION="${1#--profession=}"
+        shift
+        ;;
+    --profession)
+        if [[ -z "$2" || "$2" == --* ]]; then
+            echo "Error: --profession requires a value." >&2
+            exit 1
+        fi
+        PROFESSION="$2"
+        shift 2
+        ;;
+    --theme=*)
+        THEME="${1#--theme=}"
+        shift
+        ;;
+    --theme)
+        if [[ -z "$2" || "$2" == --* ]]; then
+            echo "Error: --theme requires a value." >&2
+            exit 1
+        fi
+        THEME="$2"
         shift 2
         ;;
     --help | -h)
@@ -228,7 +256,14 @@ if [[ "$TARGET" == "kiro" || "$TARGET" == "all" ]]; then
         echo "Generating kiro agents from templates..."
         kiro_generator_script="$REPO_DIR/generators/generate_kiro.sh"
         if [[ -x "$kiro_generator_script" ]]; then
-            run "$kiro_generator_script" --output "$DEST/agents"
+            kiro_args=("--output" "$DEST/agents")
+            if [[ -n "$THEME" ]]; then
+                kiro_args+=("--theme" "$THEME")
+            fi
+            if [[ -n "$PROFESSION" ]]; then
+                kiro_args+=("--profession" "$PROFESSION")
+            fi
+            run "$kiro_generator_script" "${kiro_args[@]}"
             echo "  kiro agents generated"
         else
             echo "  warning: generate_kiro.sh not found or not executable" >&2
@@ -290,11 +325,19 @@ if [[ "$TARGET" == "opencode" || "$TARGET" == "all" ]]; then
                 opencode_gen_dir=$(mktemp -d)
                 CLEANUP_DIRS+=("$opencode_gen_dir")
 
-                "$opencode_generator_script" \
-                    --output "$opencode_gen_dir" \
-                    --agents-dir "$REPO_DIR/agents-generic" \
-                    --agents-json "$REPO_DIR/agents.json" \
-                    --skills-dir "$REPO_DIR/skills"
+                opencode_args=(
+                    "--output" "$opencode_gen_dir"
+                    "--agents-dir" "$REPO_DIR/agents-generic"
+                    "--agents-json" "$REPO_DIR/agents.json"
+                    "--skills-dir" "$REPO_DIR/skills"
+                )
+                if [[ -n "$THEME" ]]; then
+                    opencode_args+=("--theme" "$THEME")
+                fi
+                if [[ -n "$PROFESSION" ]]; then
+                    opencode_args+=("--profession" "$PROFESSION")
+                fi
+                "$opencode_generator_script" "${opencode_args[@]}"
 
                 # Combine all generated agent JSONs into one
                 # Use find to avoid nullglob/failglob issues
