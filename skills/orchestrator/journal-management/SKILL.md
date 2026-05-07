@@ -78,6 +78,6 @@ When reading journals, ALWAYS use `path` to point to the target directory and `p
 
 ### Always Load
 
-1. The latest daily journal from `<USER_HOME>/agent-notes/orchestrator/journals/daily/` with YOUR agent suffix (most recent YYYY-MM-DD-<AGENT_SUFFIX>.md file)
+1. The latest daily journal from `<USER_HOME>/agent-notes/orchestrator/journals/daily/` with YOUR `<AGENT_SUFFIX>` (most recent YYYY-MM-DD-<AGENT_SUFFIX>.md file)
 
 2. Read additional entries (weekly/monthly/yearly) if deeper historical context is needed using the same two-method approach (glob first, ls fallback).
