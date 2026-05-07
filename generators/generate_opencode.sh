@@ -12,8 +12,13 @@ set -euo pipefail
 #   --agents-dir      Directory containing generic agent definitions (.json files)
 #   --agents-json     Path to agents registry JSON file (required)
 #   --skills-dir      Path to skills directory (required)
+#
+# The tool mapping file (cli-mapping.json) is always loaded from <repo>/mappings/
+# regardless of --agents-dir or --agents-json.
 # ============================================================================
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+MAPPING_FILE="${SCRIPT_DIR}/../mappings/cli-mapping.json"
 OUTPUT_DIR=""
 AGENTS_DIR=""
 AGENTS_JSON=""
@@ -21,6 +26,17 @@ SKILLS_DIR=""
 
 usage() {
     echo "Usage: $0 --output DIR --agents-dir DIR --agents-json FILE --skills-dir DIR"
+    echo ""
+    echo "Options:"
+    echo "  --output          Output directory for generated agent files (required)"
+    echo "  --agents-dir      Directory containing generic agent definitions (.json files)"
+    echo "  --agents-json     Path to agents registry JSON file (required)"
+    echo "  --skills-dir      Path to skills directory (required)"
+    echo "  --help, -h        Show this help message"
+}
+
+exit_usage() {
+    usage
     exit 1
 }
 
@@ -32,7 +48,7 @@ while [[ $# -gt 0 ]]; do
             shift 2
         else
             echo "Error: --output requires a value."
-            usage
+            exit_usage
         fi
         ;;
     --agents-dir)
@@ -41,7 +57,7 @@ while [[ $# -gt 0 ]]; do
             shift 2
         else
             echo "Error: --agents-dir requires a value."
-            usage
+            exit_usage
         fi
         ;;
     --agents-json)
@@ -50,7 +66,7 @@ while [[ $# -gt 0 ]]; do
             shift 2
         else
             echo "Error: --agents-json requires a value."
-            usage
+            exit_usage
         fi
         ;;
     --skills-dir)
@@ -59,15 +75,16 @@ while [[ $# -gt 0 ]]; do
             shift 2
         else
             echo "Error: --skills-dir requires a value."
-            usage
+            exit_usage
         fi
         ;;
     --help | -h)
         usage
+        exit 0
         ;;
     *)
         echo "Unknown option: $1"
-        usage
+        exit_usage
         ;;
     esac
 done
@@ -75,19 +92,29 @@ done
 # Validate required args
 if [ -z "${OUTPUT_DIR}" ]; then
     echo "Error: --output DIR is required."
-    usage
+    exit_usage
 fi
 if [ -z "${AGENTS_DIR}" ]; then
     echo "Error: --agents-dir DIR is required."
-    usage
+    exit_usage
 fi
 if [ -z "${AGENTS_JSON}" ]; then
     echo "Error: --agents-json FILE is required."
-    usage
+    exit_usage
 fi
 if [ -z "${SKILLS_DIR}" ]; then
     echo "Error: --skills-dir DIR is required."
-    usage
+    exit_usage
+fi
+
+# Validate that key input files exist
+if [ ! -f "${MAPPING_FILE}" ]; then
+    echo "Error: Mapping file not found at ${MAPPING_FILE}" >&2
+    exit 1
+fi
+if [ ! -f "${AGENTS_JSON}" ]; then
+    echo "Error: Agents JSON file not found at ${AGENTS_JSON}" >&2
+    exit 1
 fi
 
 if ! command -v jq &>/dev/null; then
@@ -140,13 +167,37 @@ for theme in $THEMES; do
                 --arg personaFile "$personaFile" \
                 --argjson skill_names "$skill_names_json" \
                 --arg skills_default "$skills_default" \
+                --slurpfile mapping "${MAPPING_FILE}" \
                 '
-                def tool_name:
-                    if . == "shell" then "bash"
-                    elif . == "subagent" then "task"
-                    elif . == "todo" then "todowrite"
-                    else . end;
+                # --- Mapping helpers using cli-mapping.json ---
 
+                # Get OpenCode tool name from mapping (opencode field)
+                def get_opencode_name($k):
+                    if ($mapping[0].tools | has($k)) and ($mapping[0].tools[$k] | has("opencode")) then
+                        if ($mapping[0].tools[$k].opencode | type) == "string" then
+                            $mapping[0].tools[$k].opencode
+                        else
+                            $k
+                        end
+                    else $k end;
+
+                # Check if tool should be included in OpenCode output
+                # Include if opencode field is truthy (string or true), exclude if false or absent
+                def is_opencode_tool($k):
+                    if ($mapping[0].tools | has($k)) then
+                        if ($mapping[0].tools[$k] | has("opencode")) then
+                            if ($mapping[0].tools[$k].opencode | type) == "string" then true
+                            else $mapping[0].tools[$k].opencode == true end
+                        else false end
+                    else true end;
+
+                # Check if config key should be promoted to OpenCode output
+                def is_opencode_config($k):
+                    if ($mapping[0].config | has($k)) and ($mapping[0].config[$k] | has("opencode")) then
+                        $mapping[0].config[$k].opencode == true
+                    else false end;
+
+                # Transform tool value: remove config key, rename default to *
                 def transform_value:
                     if type == "object" then
                         to_entries |
@@ -158,36 +209,66 @@ for theme in $THEMES; do
                         else . end
                     else . end;
 
-                # Build tools permission (exclude default entry, map names, transform values)
-                ([ $agent.tools | to_entries[] | select(.key != "default") ] | map(
+                # --- Build tools permission ---
+                # Exclude default entry, filter to opencode-enabled tools,
+                # translate names via mapping, transform values
+                ([ $agent.tools | to_entries[] |
+                    select(.key != "default") |
+                    select(is_opencode_tool(.key)) |
                     .key as $k |
-                    {(($k | tool_name)): (.value | transform_value)}
-                ) | add // {}) as $tp |
+                    {(get_opencode_name($k)): (.value | transform_value)}
+                ] | add // {}) as $tp |
 
                 # Top-level default permission from tools.default
                 ($agent.tools.default // "deny") as $tp_default |
 
-                {"external_directory": {"*": "ask", "~/.config/opencode/**": "allow"}} as $ext |
+                # --- Build external_directory ---
+                # Base set: ask for everything except opencode config dir
+                # When default is "deny" (restrictive), also extract path-based
+                # allow entries from write and edit tools
+                (["write", "edit"] as $ext_tools |
+                $ext_tools | map(
+                    . as $tool |
+                    select($agent.tools | has($tool)) |
+                    $agent.tools[$tool] as $v |
+                    if ($v | type) == "object" then
+                        [$v | to_entries[] |
+                            select(.key != "default" and .key != "config" and .value == "allow") |
+                            .key]
+                    else [] end
+                ) | flatten | unique) as $write_edit_paths |
 
-                # Skill permission
+                ($tp_default != "allow") as $restrictive |
+
+                ({"external_directory": (
+                    {"*": "ask", "~/.config/opencode/**": "allow"} +
+                    (if $restrictive then
+                        reduce $write_edit_paths[] as $p ({}; . + {($p): "allow"})
+                    else {} end)
+                )}) as $ext |
+
+                # --- Skill permission ---
                 (
                     {"*": $skills_default} + (($skill_names | map({(.): "allow"}) | add) // {})
                 ) as $skill_obj |
                 {"skill": $skill_obj} as $sk |
 
-                # Assemble permission: * → external_directory → tools → skill
+                # --- Assemble permission: * → external_directory → tools → skill ---
                 {
                     "*": $tp_default
                 } + $ext + $tp + $sk |
 
-                # Build top-level config fields (preserve source order, omit includeMcpJson)
-                ([$agent.config | to_entries[] |
-                    select(.key == "mode" or .key == "temperature" or .key == "top_p")
-                    ] | from_entries) as $cfg |
+                # --- Build top-level config fields using mapping (opencode: true) ---
+                (if ($agent.config | type) == "object" then
+                    [$agent.config | to_entries[] |
+                        select(is_opencode_config(.key))
+                    ] | from_entries
+                else {} end) as $cfg |
 
                 # Pre-compute compound values to avoid inline + in object literals
                 ($theme + "-" + $profession) as $agent_name |
-                ("{file:~/.config/opencode/professions/" + $agent.profession + ".md}{file:~/.config/opencode/personas/" + $theme + "/" + $personaFile + "}") as $prompt |
+                ($agent.profession // $profession) as $agent_profession |
+                ("{file:~/.config/opencode/professions/" + $agent_profession + ".md}{file:~/.config/opencode/personas/" + $theme + "/" + $personaFile + "}") as $prompt |
 
                 # Build the output object — description, config fields, prompt, permission
                 {

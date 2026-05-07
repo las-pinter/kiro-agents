@@ -1,11 +1,17 @@
 {
-  "$schema": "./schema-agent.json",
-  "profession": "reviewer",
+  "$schema": "../../../agents-generic/schema-agent.json",
+  "profession": "orchestrator",
   "tools": {
-    "default": "deny",
+    "default": "ask",
     "code": "allow",
+    "edit": {
+      "default": "ask",
+      "~/agent-notes/orchestrator/**": "allow"
+    },
     "glob": "allow",
     "grep": "allow",
+    "introspect": "allow",
+    "question": "allow",
     "read": "allow",
     "shell": {
       "config": {
@@ -36,16 +42,22 @@
       "git pull *": "deny"
     },
     "subagent": {
-      "default": "deny",
-      "{{THEME}}-researcher": "allow"
+      "default": "ask",
+      "{{THEME}}-*": "allow"
+    },
+    "thinking": "allow",
+    "todo": "allow",
+    "write": {
+      "default": "ask",
+      "~/agent-notes/orchestrator/**": "allow"
     }
   },
   "skills": {
     "default": "ask"
   },
   "config": {
-    "mode": "all",
-    "temperature": 0.2,
+    "mode": "primary",
+    "temperature": 0.6,
     "top_p": 0.95
   }
 }

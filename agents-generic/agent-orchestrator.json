@@ -8,10 +8,10 @@
       "default": "ask",
       "~/agent-notes/orchestrator/**": "allow"
     },
-    "external_directory": "ask",
     "glob": "allow",
     "grep": "allow",
     "introspect": "allow",
+    "question": "allow",
     "read": "allow",
     "shell": {
       "config": {
