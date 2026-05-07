@@ -32,7 +32,20 @@ AGENTS_DIR_OVERRIDE=""
 AGENTS_JSON_OVERRIDE=""
 
 usage() {
-    echo "Usage: $0 --output DIR [--profession PROFESSION] [--theme THEME] [--agents-dir DIR] [--agents-json FILE]"
+    echo "Usage: $0 --output DIR [OPTIONS]"
+    echo ""
+    echo "Options:"
+    echo "  --output          Output directory for generated agent files (required)"
+    echo "  --profession      Profession to generate (optional, filters by profession across themes)"
+    echo "  --theme           Theme to generate (optional, filters by theme across professions)"
+    echo "  --agents-dir      Directory containing generic agent definitions (.json files)"
+    echo "                    (defaults to <repo>/agents-generic)"
+    echo "  --agents-json     Path to agents registry JSON file (defaults to <repo>/agents.json)"
+    echo "  --help, -h        Show this help message"
+}
+
+exit_usage() {
+    usage
     exit 1
 }
 
@@ -43,8 +56,8 @@ while [[ $# -gt 0 ]]; do
             OUTPUT_DIR="$2"
             shift 2
         else
-            echo "Error: --output requires a value."
-            usage
+            echo "Error: --output requires a value." >&2
+            exit_usage
         fi
         ;;
     --profession)
@@ -52,26 +65,34 @@ while [[ $# -gt 0 ]]; do
             PROFESSION="$2"
             shift 2
         else
-            echo "Error: --profession requires a value."
-            usage
+            echo "Error: --profession requires a value." >&2
+            exit_usage
         fi
+        ;;
+    --profession=*)
+        PROFESSION="${1#--profession=}"
+        shift
         ;;
     --theme)
         if [[ -n "$2" && "$2" != --* ]]; then
             THEME="$2"
             shift 2
         else
-            echo "Error: --theme requires a value."
-            usage
+            echo "Error: --theme requires a value." >&2
+            exit_usage
         fi
+        ;;
+    --theme=*)
+        THEME="${1#--theme=}"
+        shift
         ;;
     --agents-dir)
         if [[ -n "$2" && "$2" != --* ]]; then
             AGENTS_DIR_OVERRIDE="$2"
             shift 2
         else
-            echo "Error: --agents-dir requires a value."
-            usage
+            echo "Error: --agents-dir requires a value." >&2
+            exit_usage
         fi
         ;;
     --agents-json)
@@ -79,16 +100,17 @@ while [[ $# -gt 0 ]]; do
             AGENTS_JSON_OVERRIDE="$2"
             shift 2
         else
-            echo "Error: --agents-json requires a value."
-            usage
+            echo "Error: --agents-json requires a value." >&2
+            exit_usage
         fi
         ;;
     --help | -h)
         usage
+        exit 0
         ;;
     *)
-        echo "Unknown option: $1"
-        usage
+        echo "Unknown option: $1" >&2
+        exit_usage
         ;;
     esac
 done
@@ -108,8 +130,8 @@ fi
 
 # Validate required args
 if [ -z "${OUTPUT_DIR}" ]; then
-    echo "Error: --output DIR is required."
-    usage
+    echo "Error: --output DIR is required." >&2
+    exit_usage
 fi
 
 echo "Generating agents to ${OUTPUT_DIR}"
@@ -130,7 +152,7 @@ for theme in $THEMES; do
             continue
         fi
     fi
-    for profession in $(jq -r ".[\"$theme\"] | keys[]" "$AGENTS_JSON"); do
+    for profession in $(jq -r --arg t "$theme" '.[$t] | keys[]' "$AGENTS_JSON"); do
         # Use --arg to safely inject theme name into jq (handles hyphens, special chars)
         _theme="$theme" && _profession="$profession"
         if [ -n "${PROFESSION}" ]; then
@@ -341,4 +363,9 @@ for theme in $THEMES; do
     done
 done
 
-echo "Done! Generated all agents."
+count=$(find "$OUTPUT_DIR" -name '*.json' | wc -l)
+if [ "$count" -eq 0 ]; then
+    echo "Warning: no agents matched your filters, nothing generated." >&2
+else
+    echo "Done! Generated $count agents."
+fi

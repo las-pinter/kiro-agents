@@ -1,0 +1,2 @@
+# Exclude noisy rules: line-length and inline-html
+rules '~MD013', '~MD033'
