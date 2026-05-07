@@ -32,8 +32,13 @@ Be decent. This is a fun project — keep it that way. Harassment, discriminatio
 2. **Create a branch** from `main` (see naming conventions below).
 3. Make your changes.
 4. **Test locally**
-    - run `./geberators/test/test_runner.sh` and check the test results. Update the tests if necessary.
-    - run `./install.sh` and confirm the generated agents work.
+    - run `./generators/test/test_runner.sh` and check the test results. Update the tests if necessary.
+    - run both generators to verify your changes:
+      ```bash
+      ./generators/generate_kiro.sh --output /tmp/test-kiro --theme your-theme
+      ./generators/generate_opencode.sh --output /tmp/test-opencode --theme your-theme --agents-dir agents-generic --agents-json agents.json --skills-dir skills
+      ```
+    - or run `./install.sh --dry-run --target opencode --theme your-theme --profession orchestrator` to preview the full install flow for OpenCode.
 5. Open a **Pull Request** against `main`.
 6. CI must pass before merge. No exceptions.
 
@@ -102,7 +107,10 @@ This is the most common contribution — a new fictional universe (theme) with a
 }
 ```
 
-1. Run `./generators/generate_kiro.sh --output ~/.kiro/agents --theme your-theme` and verify the output looks correct.
+5. Run **both** generators to test your theme:
+    - `./generators/generate_kiro.sh --output /tmp/test-kiro --theme your-theme`
+    - `./generators/generate_opencode.sh --output /tmp/test-opencode --theme your-theme --agents-dir agents-generic --agents-json agents.json --skills-dir skills`
+    - Or run `./install.sh --target all --theme your-theme` to test both at once.
 
 **Persona quality bar:**
 
@@ -120,7 +128,7 @@ Adding a new profession (e.g., `devops`, `security`, `documenter`) requires chan
 2. Add `agents-generic/agent-{profession}.json` — defines tool permissions and agent capabilities for this role. Use an existing one as a template.
 3. Add `skills/{profession}/` — at least one skill markdown file covering the profession's domain knowledge.
 4. Add entries for the new profession to `agents.json` under each existing theme (or as many as make sense).
-5. Update the install table in `README.md`.
+5. Update the install table in `README.md` to mention the new profession for both Kiro and OpenCode targets.
 
 New professions need a stronger justification than new personas — open an Issue first to discuss whether the role makes sense within the existing architecture.
 
@@ -128,7 +136,7 @@ New professions need a stronger justification than new personas — open an Issu
 
 ### Shell Script Changes
 
-`install.sh`, `update.sh`, and `generators/generate_kiro.sh` are the core infrastructure. Changes here have the highest potential for breakage.
+`install.sh`, `update.sh`, `generators/generate_kiro.sh`, `generators/generate_opencode.sh`, and `mappings/cli-mapping.json` are the core infrastructure. Changes here have the highest potential for breakage.
 
 Rules:
 
@@ -141,11 +149,12 @@ Rules:
 
 ### JSON Changes
 
-`agents.json`, `agents-generic/*.json`, and the schema files must all be valid JSON. CI validates this automatically with `jq`.
+`agents.json`, `agents-generic/*.json`, `mappings/cli-mapping.json`, and the schema files must all be valid JSON. CI validates this automatically with `jq`.
 
 - Do not add comments to JSON files (they're not valid JSON).
 - Keep `agents.json` entries consistent with the existing structure — `personaFile`, `description`, `welcomeMessage` are required fields per agent.
 - If you change the agent schema, update `agents-generic/schema-agent.json` accordingly.
+- If you change the CLI mapping, update `mappings/schema-mapping.json` accordingly.
 
 ---
 
@@ -164,9 +173,9 @@ To run checks locally before pushing:
 
 ```bash
 # Shell linting
-shellcheck install.sh update.sh generators/generate_kiro.sh
+shellcheck install.sh update.sh generators/generate_kiro.sh generators/generate_opencode.sh
 
-# JSON validation
+# JSON validation (validates all JSON including mappings)
 find . -name "*.json" | xargs -I{} jq empty {}
 ```
 
@@ -178,7 +187,8 @@ find . -name "*.json" | xargs -I{} jq empty {}
 persona-agents/
 ├── agents.json                  # Agent registry — add theme/profession entries here
 ├── agents-generic/              # Generic agent definitions (tool permissions, schemas)
-│   └── agent-{profession}.json  # One per profession
+│   ├── agent-{profession}.json  # One per profession
+│   └── schema-agent.json        # Agent schema definition
 ├── personas/
 │   └── {theme}/                 # One directory per theme
 │       └── {character}.md       # One file per persona
@@ -186,9 +196,23 @@ persona-agents/
 │   └── {profession}.md          # Role behaviour definitions
 ├── skills/
 │   └── {profession}/            # Skill docs organised by profession
+├── mappings/
+│   ├── cli-mapping.json         # Tool name mapping between Kiro and OpenCode
+│   └── schema-mapping.json      # Mapping schema definition
 ├── generators/
-│   └── generate_kiro.sh         # Generates agent configs from generics + registry
-├── install.sh                   # Installs to ~/.kiro/
+│   ├── generate_kiro.sh         # Generates Kiro agent configs from generics + registry
+│   ├── generate_opencode.sh     # Generates OpenCode agent configs from generics + registry
+│   └── test/
+│       ├── test_runner.sh       # Test runner for generators
+│       ├── test-agents.json     # Test agent registry
+│       ├── generics/            # Test generic agent definitions
+│       ├── skills/              # Test skill definitions
+│       └── reference/           # Expected test output for diff comparison
+├── settings/
+│   ├── kiro-cli.json.example    # Kiro CLI settings template
+│   └── mcp.json.example         # MCP settings template
+├── install.sh                   # Installs to ~/.kiro/ and/or ~/.config/opencode/
+│                               # (supports --target, --theme, --profession, --dry-run, --force)
 └── update.sh                    # git pull + reinstall with backup
 ```
 

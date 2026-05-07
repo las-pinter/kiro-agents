@@ -1,9 +1,9 @@
-# kiro-agents 🎭
+# persona-agents 🎭
 
 > **"Your AI agents, but make it fun."**
 
 Tired of AI agents with all the personality of a loading spinner? Same.  
-`kiro-agents` is a collection of personified [Kiro CLI](https://kiro.dev) agents — each one with its own voice, quirks, and attitude — because AI-assisted development shouldn't feel like filing taxes.  
+`persona-agents` is a collection of personified agents for [Kiro CLI](https://kiro.dev) and [OpenCode](https://opencode.sh) — each one with its own voice, quirks, and attitude — because AI-assisted development shouldn't feel like filing taxes.  
 Swap out the bland, drop in a character, and actually enjoy the thing helping you build.
 
 *A goblin horde and a WH40K warband for your codebase. You're welcome.*
@@ -14,22 +14,22 @@ Swap out the bland, drop in a character, and actually enjoy the thing helping yo
 
 [![License](https://img.shields.io/github/license/las-pinter/persona-agents)](LICENSE)
 
-> **Warning:** Review `install.sh` before running. Files will be written to `~/.kiro/`.
+> **Warning:** Review `install.sh` before running. Files will be written to `~/.kiro/` (Kiro) and/or `~/.config/opencode/` (OpenCode) depending on `--target`.
 
 ## Prerequisites
 
-`jq` is required for agent generation.
+`jq` and `perl` are required for agent generation and config merging.
 
 **Ubuntu/Debian:**
 
 ```bash
-sudo apt-get install jq
+sudo apt-get install jq perl
 ```
 
 **macOS:**
 
 ```bash
-brew install jq
+brew install jq perl
 ```
 
 ## Install
@@ -40,32 +40,62 @@ chmod +x ~/persona-agents/install.sh
 ~/persona-agents/install.sh
 ```
 
+By default `install.sh` installs to **both** `~/.kiro/` (Kiro) and `~/.config/opencode/` (OpenCode). Use `--target` to install to only one:
+
+```bash
+# Install only for Kiro
+~/persona-agents/install.sh --target kiro
+
+# Install only for OpenCode
+~/persona-agents/install.sh --target opencode
+```
+
+You can also filter by theme or profession:
+
+```bash
+~/persona-agents/install.sh --theme wh40k --profession orchestrator
+```
+
 ## Update
 
 ```bash
 cd ~/persona-agents && ./update.sh
 ```
 
-This pulls the latest changes and reinstalls agents, personas, professions, and skills, backing up any existing files. Your `~/.kiro/settings/` files are never touched by updates.
+This pulls the latest changes and reinstalls everything with `--force`, backing up any existing files. Settings files are never touched by updates. Currently `update.sh` installs to both targets — if you only want one, use `./install.sh --target kiro` (or `--target opencode`) directly.
 
 ## What Gets Installed
+
+### Kiro (`--target kiro`)
 
 | Repo path | Installed to | Notes |
 | --- | --- | --- |
 | `agents.json` + `agents-generic/*.json` | `~/.kiro/agents/` | Agent configurations generated from generic definitions |
-| `personas/goblin/*.md` | `~/.kiro/personas/goblin/` | Goblin persona definitions |
-| `personas/wh40k/*.md` | `~/.kiro/personas/wh40k/` | WH40K persona definitions |
-| `personas/wh40kOrk/*.md` | `~/.kiro/personas/wh40kOrk/` | WH40K Ork persona definitions |
+| `personas/{theme}/*.md` | `~/.kiro/personas/{theme}/` | Persona definitions organized by theme |
 | `professions/*.md` | `~/.kiro/professions/` | Profession/role definitions |
 | `skills/{profession}/*.md` | `~/.kiro/skills/{profession}/` | Skill documents organized by profession |
 | `settings/kiro-cli.json.example` | `~/.kiro/settings/cli.json` | Only if file doesn't exist |
 | `settings/mcp.json.example` | `~/.kiro/settings/mcp.json` | Only if file doesn't exist |
 
+### OpenCode (`--target opencode`)
+
+| Repo path | Installed to | Notes |
+| --- | --- | --- |
+| `agents.json` + `agents-generic/*.json` | `~/.config/opencode/opencode.json` (`agent` key) | Merged into existing config |
+| `personas/{theme}/*.md` | `~/.config/opencode/personas/{theme}/` | Persona definitions organized by theme |
+| `professions/*.md` | `~/.config/opencode/professions/` | Profession/role definitions |
+| `skills/{profession}/*.md` | `~/.config/opencode/skills/{profession}/` | Skill documents organized by profession |
+| `settings/mcp.json.example` | `~/.config/opencode/opencode.json` (`mcp` key) | Merged into existing config (transformed) |
+
 ## Customizing
 
-Edit files directly in `~/.kiro/`. Running `install.sh` without `--force` will never overwrite your changes. Running `update.sh` (which uses `--force`) will back up your files before overwriting.
+Edit files directly in `~/.kiro/` (Kiro) or `~/.config/opencode/` (OpenCode) depending on your target. Running `install.sh` without `--force` will never overwrite your changes. Running `update.sh` (which uses `--force`) will back up your files before overwriting.
+
+For OpenCode, you can also edit `~/.config/opencode/opencode.json` directly to tweak agent configurations, permissions, and MCP settings.
 
 ---
+
+All agents below work with **both Kiro CLI and OpenCode**. When you install with `install.sh` (default: both targets), each agent is generated in the format appropriate for your target CLI.
 
 ## The Goblin Horde
 
