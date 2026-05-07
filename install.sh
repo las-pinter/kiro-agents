@@ -16,7 +16,6 @@ set -euo pipefail
 
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
 DEST="$HOME/.kiro"
-BACKUP_DIR="$HOME/.kiro-bak"
 OPENCODE_DEST="$HOME/.config/opencode"
 OPENCODE_CONFIG="$OPENCODE_DEST/opencode.json"
 FORCE=false
@@ -65,27 +64,39 @@ usage() {
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        --force)   FORCE=true; shift ;;
-        --dry-run) DRY_RUN=true; shift ;;
-        --target)
-            if [[ -z "$2" || "$2" == --* ]]; then
-                echo "Error: --target requires a value (kiro, opencode, or all)." >&2
-                exit 1
-            fi
-            case "$2" in
-                kiro|opencode|all) TARGET="$2"; shift 2 ;;
-                *)
-                    echo "Error: --target must be 'kiro', 'opencode', or 'all', got '$2'." >&2
-                    exit 1
-                    ;;
-            esac
+    --force)
+        FORCE=true
+        shift
+        ;;
+    --dry-run)
+        DRY_RUN=true
+        shift
+        ;;
+    --target)
+        if [[ -z "$2" || "$2" == --* ]]; then
+            echo "Error: --target requires a value (kiro, opencode, or all)." >&2
+            exit 1
+        fi
+        case "$2" in
+        kiro | opencode | all)
+            TARGET="$2"
+            shift 2
             ;;
-        --help|-h) usage; exit 0 ;;
         *)
-            echo "Unknown option: $1" >&2
-            usage
+            echo "Error: --target must be 'kiro', 'opencode', or 'all', got '$2'." >&2
             exit 1
             ;;
+        esac
+        ;;
+    --help | -h)
+        usage
+        exit 0
+        ;;
+    *)
+        echo "Unknown option: $1" >&2
+        usage
+        exit 1
+        ;;
     esac
 done
 
@@ -112,13 +123,6 @@ copy_file() {
     if [[ -f "$dest" && "$FORCE" != true ]]; then
         echo "  skipped (exists): $dest"
         return
-    fi
-    if [[ -f "$dest" && "$FORCE" == true ]]; then
-        local backup
-        backup="$BACKUP_DIR/$rel_path.bak.$(date +%Y%m%d%H%M%S)"
-        mkdir -p "$(dirname "$backup")"
-        mv "$dest" "$backup"
-        echo "  backed up: $backup"
     fi
     cp "$src" "$dest"
     echo "  installed: $dest"
@@ -179,7 +183,7 @@ merge_json_into() {
     # commas (which OpenCode tolerates but jq doesn't), strip them first.
     # Only do this if jq can't parse the file, to avoid corrupting strings.
     if ! jq . "$dest_file" >/dev/null 2>&1; then
-        perl -0777 -pe 's/,\s*([}\]])/$1/g' "$dest_file" > "$tmp"
+        perl -0777 -pe 's/,\s*([}\]])/$1/g' "$dest_file" >"$tmp"
     else
         cp "$dest_file" "$tmp"
     fi
@@ -187,7 +191,7 @@ merge_json_into() {
     # Merge: update the dest_key object with new data (new overwrites old at top level)
     if ! jq --argjson data "$(cat "$src_file")" \
         ".${dest_key} = ((.${dest_key} // {}) + \$data)" \
-        "$tmp" > "${tmp}.merged"; then
+        "$tmp" >"${tmp}.merged"; then
         echo "Error: jq merge failed for .${dest_key}" >&2
         return 1
     fi
@@ -246,8 +250,8 @@ if [[ "$TARGET" == "opencode" || "$TARGET" == "all" ]]; then
     done
 
     # -- Generate and merge OpenCode agents --
-    if [[ "$FORCE" != true ]] && [[ -f "$OPENCODE_CONFIG" ]] && \
-       jq -e '.agent | length > 0' "$OPENCODE_CONFIG" &>/dev/null; then
+    if [[ "$FORCE" != true ]] && [[ -f "$OPENCODE_CONFIG" ]] &&
+        jq -e '.agent | length > 0' "$OPENCODE_CONFIG" &>/dev/null; then
         echo ""
         echo "  skipped (agents already in config, use --force to regenerate)"
     else
@@ -273,7 +277,7 @@ if [[ "$TARGET" == "opencode" || "$TARGET" == "all" ]]; then
                 if [[ -n "$(find "$opencode_gen_dir" -maxdepth 1 -name '*.json' -print -quit)" ]]; then
                     combined_agents=$(mktemp)
                     CLEANUP_FILES+=("$combined_agents")
-                    jq -s 'add' "$opencode_gen_dir"/*.json > "$combined_agents"
+                    jq -s 'add' "$opencode_gen_dir"/*.json >"$combined_agents"
 
                     if [[ -f "$OPENCODE_CONFIG" ]]; then
                         merge_json_into "$combined_agents" "$OPENCODE_CONFIG" "agent"
@@ -304,7 +308,7 @@ if [[ "$TARGET" == "opencode" || "$TARGET" == "all" ]]; then
                 CLEANUP_FILES+=("$mcp_tmp")
                 # Transform mcpServers format → opencode mcp format
                 jq '.mcpServers | to_entries | map({key: .key, value: {type: "remote", url: .value.url, enabled: true}}) | from_entries' \
-                    "$mcp_example" > "$mcp_tmp"
+                    "$mcp_example" >"$mcp_tmp"
                 merge_json_into "$mcp_tmp" "$OPENCODE_CONFIG" "mcp"
             fi
         else
@@ -330,7 +334,7 @@ if [[ "$TARGET" == "kiro" || "$TARGET" == "all" ]]; then
             if [[ "$DRY_RUN" == true ]]; then
                 echo "  (dry-run) would add alias $name to $rc"
             else
-                printf '\n%s\n' "$line" >> "$rc"
+                printf '\n%s\n' "$line" >>"$rc"
                 echo "  installed alias: $name in $rc"
             fi
         fi
@@ -384,7 +388,7 @@ if [[ "$TARGET" == "opencode" || "$TARGET" == "all" ]]; then
                 if [[ "$DRY_RUN" == true ]]; then
                     echo "  (dry-run) would add alias $name to $rc"
                 else
-                    printf '\n%s\n' "$line" >> "$rc"
+                    printf '\n%s\n' "$line" >>"$rc"
                     echo "  installed alias: $name in $rc"
                 fi
             fi
