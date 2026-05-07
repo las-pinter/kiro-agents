@@ -6,12 +6,15 @@ set -euo pipefail
 #
 # Usage:
 #   ./generate_opencode.sh --output DIR --agents-dir DIR --agents-json FILE --skills-dir DIR
+#                          [--profession PROFESSION] [--theme THEME]
 #
 # Options:
 #   --output          Output directory for generated agent files (required)
 #   --agents-dir      Directory containing generic agent definitions (.json files)
 #   --agents-json     Path to agents registry JSON file (required)
 #   --skills-dir      Path to skills directory (required)
+#   --profession      Profession to generate (optional, filters by profession)
+#   --theme           Theme to generate (optional, filters by theme)
 #
 # The tool mapping file (cli-mapping.json) is always loaded from <repo>/mappings/
 # regardless of --agents-dir or --agents-json.
@@ -23,15 +26,19 @@ OUTPUT_DIR=""
 AGENTS_DIR=""
 AGENTS_JSON=""
 SKILLS_DIR=""
+PROFESSION=""
+THEME=""
 
 usage() {
-    echo "Usage: $0 --output DIR --agents-dir DIR --agents-json FILE --skills-dir DIR"
+    echo "Usage: $0 --output DIR --agents-dir DIR --agents-json FILE --skills-dir DIR [--profession PROFESSION] [--theme THEME]"
     echo ""
     echo "Options:"
     echo "  --output          Output directory for generated agent files (required)"
     echo "  --agents-dir      Directory containing generic agent definitions (.json files)"
     echo "  --agents-json     Path to agents registry JSON file (required)"
     echo "  --skills-dir      Path to skills directory (required)"
+    echo "  --profession      Profession to generate (optional, filters by profession)"
+    echo "  --theme           Theme to generate (optional, filters by theme)"
     echo "  --help, -h        Show this help message"
 }
 
@@ -47,7 +54,7 @@ while [[ $# -gt 0 ]]; do
             OUTPUT_DIR="$2"
             shift 2
         else
-            echo "Error: --output requires a value."
+            echo "Error: --output requires a value." >&2
             exit_usage
         fi
         ;;
@@ -56,7 +63,7 @@ while [[ $# -gt 0 ]]; do
             AGENTS_DIR="$2"
             shift 2
         else
-            echo "Error: --agents-dir requires a value."
+            echo "Error: --agents-dir requires a value." >&2
             exit_usage
         fi
         ;;
@@ -65,7 +72,7 @@ while [[ $# -gt 0 ]]; do
             AGENTS_JSON="$2"
             shift 2
         else
-            echo "Error: --agents-json requires a value."
+            echo "Error: --agents-json requires a value." >&2
             exit_usage
         fi
         ;;
@@ -74,16 +81,42 @@ while [[ $# -gt 0 ]]; do
             SKILLS_DIR="$2"
             shift 2
         else
-            echo "Error: --skills-dir requires a value."
+            echo "Error: --skills-dir requires a value." >&2
             exit_usage
         fi
+        ;;
+    --profession)
+        if [[ -n "$2" && "$2" != --* ]]; then
+            PROFESSION="$2"
+            shift 2
+        else
+            echo "Error: --profession requires a value." >&2
+            exit_usage
+        fi
+        ;;
+    --profession=*)
+        PROFESSION="${1#--profession=}"
+        shift
+        ;;
+    --theme)
+        if [[ -n "$2" && "$2" != --* ]]; then
+            THEME="$2"
+            shift 2
+        else
+            echo "Error: --theme requires a value." >&2
+            exit_usage
+        fi
+        ;;
+    --theme=*)
+        THEME="${1#--theme=}"
+        shift
         ;;
     --help | -h)
         usage
         exit 0
         ;;
     *)
-        echo "Unknown option: $1"
+        echo "Unknown option: $1" >&2
         exit_usage
         ;;
     esac
@@ -91,19 +124,19 @@ done
 
 # Validate required args
 if [ -z "${OUTPUT_DIR}" ]; then
-    echo "Error: --output DIR is required."
+    echo "Error: --output DIR is required." >&2
     exit_usage
 fi
 if [ -z "${AGENTS_DIR}" ]; then
-    echo "Error: --agents-dir DIR is required."
+    echo "Error: --agents-dir DIR is required." >&2
     exit_usage
 fi
 if [ -z "${AGENTS_JSON}" ]; then
-    echo "Error: --agents-json FILE is required."
+    echo "Error: --agents-json FILE is required." >&2
     exit_usage
 fi
 if [ -z "${SKILLS_DIR}" ]; then
-    echo "Error: --skills-dir DIR is required."
+    echo "Error: --skills-dir DIR is required." >&2
     exit_usage
 fi
 
@@ -123,14 +156,30 @@ if ! command -v jq &>/dev/null; then
 fi
 
 echo "Generating OpenCode agents to ${OUTPUT_DIR}"
+if [ -n "${PROFESSION}" ]; then
+    echo "Generating only ${PROFESSION} agents"
+fi
+if [ -n "${THEME}" ]; then
+    echo "Generating only ${THEME} theme agents"
+fi
 mkdir -p "${OUTPUT_DIR}"
 
 # Iterate over themes and professions
 THEMES=$(jq -r 'keys[]' "$AGENTS_JSON")
 
 for theme in $THEMES; do
-    PROFESSIONS=$(jq -r ".[\"$theme\"] | keys[]" "$AGENTS_JSON")
+    if [ -n "${THEME}" ]; then
+        if [ "$theme" != "${THEME}" ]; then
+            continue
+        fi
+    fi
+    PROFESSIONS=$(jq -r --arg t "$theme" '.[$t] | keys[]' "$AGENTS_JSON")
     for profession in $PROFESSIONS; do
+        if [ -n "${PROFESSION}" ]; then
+            if [ "$profession" != "${PROFESSION}" ]; then
+                continue
+            fi
+        fi
         # Source file for this profession
         generic_agent_file="$AGENTS_DIR/agent-$profession.json"
 
@@ -290,4 +339,9 @@ for theme in $THEMES; do
     done
 done
 
-echo "Done! Generated all OpenCode agents."
+count=$(find "$OUTPUT_DIR" -name '*.json' | wc -l)
+if [ "$count" -eq 0 ]; then
+    echo "Warning: no agents matched your filters, nothing generated." >&2
+else
+    echo "Done! Generated $count OpenCode agents."
+fi
