@@ -103,7 +103,7 @@ run() {
 
 copy_file() {
     local src="$1" dest="$2"
-    local rel_path="${dest#"$DEST"/}"
+    local rel_path="${dest#"$HOME"/}"
     if [[ "$DRY_RUN" == true ]]; then
         echo "  (dry-run) would install: $dest"
         return
@@ -137,6 +137,20 @@ copy_if_missing() {
     mkdir -p "$(dirname "$dest")"
     cp "$src" "$dest"
     echo "  created: $dest"
+}
+
+# Check if generation is needed for a given output directory.
+# Returns 0 (needs gen) if force is set or the directory is empty/missing.
+# Returns 1 (skip) if the directory has content and force is not set.
+needs_generation() {
+    local dir="$1"
+    if [[ "$FORCE" == true ]]; then
+        return 0
+    fi
+    if [[ -d "$dir" ]] && [[ -n "$(find "$dir" -maxdepth 1 -name '*.json' -print -quit 2>/dev/null)" ]]; then
+        return 1
+    fi
+    return 0
 }
 
 # Merge a JSON file into a destination JSON file at a given top-level key.
@@ -186,13 +200,17 @@ merge_json_into() {
 # ---------------------------------------------------------------------------
 
 if [[ "$TARGET" == "kiro" || "$TARGET" == "all" ]]; then
-    echo "Generating kiro agents from templates..."
-    kiro_generator_script="$REPO_DIR/generators/generate_kiro.sh"
-    if [[ -x "$kiro_generator_script" ]]; then
-        run "$kiro_generator_script" --output "$DEST/agents"
-        echo "  kiro agents generated"
+    if needs_generation "$DEST/agents"; then
+        echo "Generating kiro agents from templates..."
+        kiro_generator_script="$REPO_DIR/generators/generate_kiro.sh"
+        if [[ -x "$kiro_generator_script" ]]; then
+            run "$kiro_generator_script" --output "$DEST/agents"
+            echo "  kiro agents generated"
+        else
+            echo "  warning: generate_kiro.sh not found or not executable" >&2
+        fi
     else
-        echo "  warning: generate_kiro.sh not found or not executable" >&2
+        echo "  skipped (agents exist, use --force to regenerate): $DEST/agents"
     fi
 
     echo ""
@@ -228,42 +246,48 @@ if [[ "$TARGET" == "opencode" || "$TARGET" == "all" ]]; then
     done
 
     # -- Generate and merge OpenCode agents --
-    echo ""
-    echo "Generating OpenCode agents..."
-
-    opencode_generator_script="$REPO_DIR/generators/generate_opencode.sh"
-    if [[ -x "$opencode_generator_script" ]]; then
-        if [[ "$DRY_RUN" == true ]]; then
-            echo "  (dry-run) would run opencode generator..."
-        else
-            opencode_gen_dir=$(mktemp -d)
-            CLEANUP_DIRS+=("$opencode_gen_dir")
-
-            "$opencode_generator_script" \
-                --output "$opencode_gen_dir" \
-                --agents-dir "$REPO_DIR/agents-generic" \
-                --agents-json "$REPO_DIR/agents.json" \
-                --skills-dir "$REPO_DIR/skills"
-
-            # Combine all generated agent JSONs into one
-            # Use find to avoid nullglob/failglob issues
-            if [[ -n "$(find "$opencode_gen_dir" -maxdepth 1 -name '*.json' -print -quit)" ]]; then
-                combined_agents=$(mktemp)
-                CLEANUP_FILES+=("$combined_agents")
-                jq -s 'add' "$opencode_gen_dir"/*.json > "$combined_agents"
-
-                if [[ -f "$OPENCODE_CONFIG" ]]; then
-                    merge_json_into "$combined_agents" "$OPENCODE_CONFIG" "agent"
-                else
-                    echo "  warning: $OPENCODE_CONFIG not found — run 'opencode init' first" >&2
-                fi
-            else
-                echo "  warning: no agent files generated" >&2
-            fi
-        fi
-        echo "  OpenCode agents generated and merged"
+    if [[ "$FORCE" != true ]] && [[ -f "$OPENCODE_CONFIG" ]] && \
+       jq -e '.agent | length > 0' "$OPENCODE_CONFIG" &>/dev/null; then
+        echo ""
+        echo "  skipped (agents already in config, use --force to regenerate)"
     else
-        echo "  warning: generate_opencode.sh not found or not executable" >&2
+        echo ""
+        echo "Generating OpenCode agents..."
+
+        opencode_generator_script="$REPO_DIR/generators/generate_opencode.sh"
+        if [[ -x "$opencode_generator_script" ]]; then
+            if [[ "$DRY_RUN" == true ]]; then
+                echo "  (dry-run) would run opencode generator..."
+            else
+                opencode_gen_dir=$(mktemp -d)
+                CLEANUP_DIRS+=("$opencode_gen_dir")
+
+                "$opencode_generator_script" \
+                    --output "$opencode_gen_dir" \
+                    --agents-dir "$REPO_DIR/agents-generic" \
+                    --agents-json "$REPO_DIR/agents.json" \
+                    --skills-dir "$REPO_DIR/skills"
+
+                # Combine all generated agent JSONs into one
+                # Use find to avoid nullglob/failglob issues
+                if [[ -n "$(find "$opencode_gen_dir" -maxdepth 1 -name '*.json' -print -quit)" ]]; then
+                    combined_agents=$(mktemp)
+                    CLEANUP_FILES+=("$combined_agents")
+                    jq -s 'add' "$opencode_gen_dir"/*.json > "$combined_agents"
+
+                    if [[ -f "$OPENCODE_CONFIG" ]]; then
+                        merge_json_into "$combined_agents" "$OPENCODE_CONFIG" "agent"
+                    else
+                        echo "  warning: $OPENCODE_CONFIG not found — run 'opencode init' first" >&2
+                    fi
+                else
+                    echo "  warning: no agent files generated" >&2
+                fi
+            fi
+            echo "  OpenCode agents generated and merged"
+        else
+            echo "  warning: generate_opencode.sh not found or not executable" >&2
+        fi
     fi
 
     # -- Merge MCP settings into OpenCode config --
@@ -321,6 +345,61 @@ if [[ "$TARGET" == "kiro" || "$TARGET" == "all" ]]; then
     install_aliases_for_rc() {
         local rc="$1"
         for entry in "${ALIAS_ENTRIES[@]}"; do
+            local name="${entry%%:*}"
+            local cmd="${entry#*:}"
+            install_alias "$name" "$cmd" "$rc"
+        done
+    }
+
+    if [[ -f "$HOME/.zshrc" ]]; then
+        install_aliases_for_rc "$HOME/.zshrc"
+    fi
+
+    if [[ -f "$HOME/.bashrc" ]]; then
+        if [[ "$DRY_RUN" != true ]]; then
+            touch "$HOME/.bash_aliases"
+        fi
+        install_aliases_for_rc "$HOME/.bash_aliases"
+    fi
+fi
+
+# ---------------------------------------------------------------------------
+# Shell aliases (opencode)
+# ---------------------------------------------------------------------------
+
+if [[ "$TARGET" == "opencode" || "$TARGET" == "all" ]]; then
+    echo ""
+    echo "Installing opencode aliases ..."
+
+    # install_alias is already defined above (kia aliases section is a
+    # separate if block, but both run in the same shell so the function
+    # persists. We define it here too for standalone --target opencode.
+    if ! declare -f install_alias &>/dev/null; then
+        install_alias() {
+            local name="$1" cmd="$2" rc="$3"
+            local line="alias ${name}='${cmd}'"
+            if grep -qF "$line" "$rc" 2>/dev/null; then
+                echo "  skipped (exists): $name in $rc"
+            else
+                if [[ "$DRY_RUN" == true ]]; then
+                    echo "  (dry-run) would add alias $name to $rc"
+                else
+                    printf '\n%s\n' "$line" >> "$rc"
+                    echo "  installed alias: $name in $rc"
+                fi
+            fi
+        }
+    fi
+
+    OPENCODE_ALIAS_ENTRIES=(
+        "opencode-goblin:opencode --agent goblin-orchestrator"
+        "opencode-wh40k:opencode --agent wh40k-orchestrator"
+        "opencode-wh40kOrk:opencode --agent wh40kOrk-orchestrator"
+    )
+
+    install_aliases_for_rc() {
+        local rc="$1"
+        for entry in "${OPENCODE_ALIAS_ENTRIES[@]}"; do
             local name="${entry%%:*}"
             local cmd="${entry#*:}"
             install_alias "$name" "$cmd" "$rc"
