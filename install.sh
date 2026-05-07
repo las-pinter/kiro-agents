@@ -114,7 +114,6 @@ run() {
 
 copy_file() {
     local src="$1" dest="$2"
-    local rel_path="${dest#"$HOME"/}"
     if [[ "$DRY_RUN" == true ]]; then
         echo "  (dry-run) would install: $dest"
         return
