@@ -11,10 +11,10 @@
 - [Branch & PR Workflow](#branch--pr-workflow)
 - [Commit Messages](#commit-messages)
 - [What You Can Contribute](#what-you-can-contribute)
-  - [New Persona / Theme](#new-persona--theme)
-  - [New Profession](#new-profession)
-  - [Shell Script Changes](#shell-script-changes)
-  - [JSON Changes](#json-changes)
+   - [New Persona / Theme](#new-persona--theme)
+   - [New Profession](#new-profession)
+   - [Shell Script Changes](#shell-script-changes)
+   - [JSON Changes](#json-changes)
 - [CI Checks](#ci-checks)
 - [File Structure Reference](#file-structure-reference)
 
@@ -29,18 +29,23 @@ Be decent. This is a fun project — keep it that way. Harassment, discriminatio
 ## How to Contribute
 
 1. **Fork** the repo and clone your fork locally.
-2. **Create a branch** from `main` (see naming conventions below).
-3. Make your changes.
-4. **Test locally**
-    - run `./generators/test/test_runner.sh` and check the test results. Update the tests if necessary.
-    - run both generators to verify your changes:
-      ```bash
-      ./generators/generate_kiro.sh --output /tmp/test-kiro --theme your-theme
-      ./generators/generate_opencode.sh --output /tmp/test-opencode --theme your-theme --agents-dir agents-generic --agents-json agents.json --skills-dir skills
-      ```
-    - or run `./install.sh --dry-run --target opencode --theme your-theme --profession orchestrator` to preview the full install flow for OpenCode.
-5. Open a **Pull Request** against `main`.
-6. CI must pass before merge. No exceptions.
+1. **Create a branch** from `main` (see naming conventions below).
+1. Make your changes.
+1. **Test locally**
+
+   Run `./generators/test/test_runner.sh` and check the test results. Update the tests if necessary.
+
+   Run both generators to verify your changes:
+
+   ```bash
+   ./generators/generate_kiro.sh --output /tmp/test-kiro --theme your-theme
+   ./generators/generate_opencode.sh --output /tmp/test-opencode --theme your-theme
+   ```
+
+   Or run `./install.sh --dry-run --target opencode --theme your-theme --profession orchestrator` to preview the full install flow for OpenCode.
+
+1. Open a **Pull Request** against `main`.
+1. CI must pass before merge. No exceptions.
 
 ---
 
@@ -50,7 +55,7 @@ This repo uses **trunk-based development**: `main` is always stable, and all wor
 
 **Branch naming:**
 
-```
+```text
 feat/add-starwars-theme
 feat/add-medic-profession
 fix/install-backup-overwrite
@@ -72,7 +77,7 @@ Keep branches focused — one logical change per branch. Don't bundle a new pers
 
 Use [Conventional Commits](https://www.conventionalcommits.org/):
 
-```
+```text
 feat: add star wars theme with 7 personas
 fix: install.sh not creating target directory before copy
 docs: add profession table to README
@@ -93,9 +98,9 @@ This is the most common contribution — a new fictional universe (theme) with a
 **Steps:**
 
 1. Create a directory: `personas/{your-theme}/`
-2. Add one `.md` file per profession you're covering (orchestrator, planner, researcher, implementer, reviewer, tester, mascot). You don't need all seven, but the more the merrier.
-3. Each persona file should define the character's **personality**, **speech style**, **quirks**, and how they approach their role. Look at `personas/goblin/bossnik-chief.md` for reference.
-4. Add your theme's entries to `agents.json`:
+1. Add one `.md` file per profession you're covering (orchestrator, planner, researcher, implementer, reviewer, tester, mascot). You don't need all seven, but the more the merrier.
+1. Each persona file should define the character's **personality**, **speech style**, **quirks**, and how they approach their role. Look at `personas/goblin/bossnik-chief.md` for reference.
+1. Add your theme's entries to `agents.json`:
 
 ```json
 "your-theme": {
@@ -107,10 +112,11 @@ This is the most common contribution — a new fictional universe (theme) with a
 }
 ```
 
-5. Run **both** generators to test your theme:
-    - `./generators/generate_kiro.sh --output /tmp/test-kiro --theme your-theme`
-    - `./generators/generate_opencode.sh --output /tmp/test-opencode --theme your-theme --agents-dir agents-generic --agents-json agents.json --skills-dir skills`
-    - Or run `./install.sh --target all --theme your-theme` to test both at once.
+1. Run **both** generators to test your theme:
+
+- `./generators/generate_kiro.sh --output /tmp/test-kiro --theme your-theme`
+- `./generators/generate_opencode.sh --output /tmp/test-opencode --theme your-theme`
+- Or run `./install.sh --target all --theme your-theme` to test both at once.
 
 **Persona quality bar:**
 
@@ -125,10 +131,10 @@ This is the most common contribution — a new fictional universe (theme) with a
 Adding a new profession (e.g., `devops`, `security`, `documenter`) requires changes in multiple places:
 
 1. Add `professions/{profession}.md` — defines the role's responsibilities and behaviour.
-2. Add `agents-generic/agent-{profession}.json` — defines tool permissions and agent capabilities for this role. Use an existing one as a template.
-3. Add `skills/{profession}/` — at least one skill markdown file covering the profession's domain knowledge.
-4. Add entries for the new profession to `agents.json` under each existing theme (or as many as make sense).
-5. Update the install table in `README.md` to mention the new profession for both Kiro and OpenCode targets.
+1. Add `agents-generic/agent-{profession}.json` — defines tool permissions and agent capabilities for this role. Use an existing one as a template.
+1. Add `skills/{profession}/` — at least one skill markdown file covering the profession's domain knowledge.
+1. Add entries for the new profession to `agents.json` under each existing theme (or as many as make sense).
+1. Update the install table in `README.md` to mention the new profession for both Kiro and OpenCode targets.
 
 New professions need a stronger justification than new personas — open an Issue first to discuss whether the role makes sense within the existing architecture.
 
@@ -163,7 +169,7 @@ Rules:
 All PRs must pass the following checks before merge:
 
 | Check | Tool | What it validates |
-|---|---|---|
+| --- | --- | --- |
 | Shell linting | `shellcheck` | No errors or warnings in `.sh` files |
 | JSON validation | `jq` | All `.json` files are valid and parseable |
 
@@ -218,7 +224,7 @@ persona-agents/
 
 ---
 
-## Questions?
+## Questions
 
 Open an [Issue](https://github.com/las-pinter/persona-agents/issues) with the `question` label. Or just open a PR — if something's wrong, it'll get caught in review.
 

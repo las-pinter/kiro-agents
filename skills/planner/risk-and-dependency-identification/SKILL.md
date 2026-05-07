@@ -6,11 +6,13 @@ description: Identify risks, blockers, and dependencies in a plan before finaliz
 # Risk and Dependency Identification
 
 ## When to Use
+
 After task decomposition, before finalizing a plan.
 
 ## Risk Identification
 
 For each task, ask:
+
 - What could go wrong?
 - Does this depend on an external system, API, or team?
 - Is this in unfamiliar territory (new tech, unclear requirements)?

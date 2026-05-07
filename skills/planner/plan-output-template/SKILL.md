@@ -6,11 +6,12 @@ description: Standard template for producing a final plan ready to hand off to a
 # Plan Output Template
 
 ## When to Use
+
 When producing a final plan to hand off to a developer or executor.
 
 ## Template
 
-```
+```text
 # Plan: [Goal in one sentence]
 
 ## Goal
@@ -26,7 +27,7 @@ When producing a final plan to hand off to a developer or executor.
 ## Risks
 
 | Risk/Dependency | Type | Impact | Mitigation |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | ... | ... | ... | ... |
 
 ## Open Questions

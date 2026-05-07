@@ -6,6 +6,7 @@ description: Choose the right type of tests before writing any — unit, integra
 # Test Strategy Selection
 
 ## When to Use
+
 Before writing any tests, choose the right type first.
 
 ## Test Types
@@ -19,12 +20,14 @@ Before writing any tests, choose the right type first.
 ## Risk-Based Selection
 
 Focus testing effort where failure is most costly or most likely:
+
 - New/changed code → unit + integration
 - Critical user paths → e2e
 - External integrations → integration with mocks + contract tests
 - Performance-sensitive code → benchmark tests
 
 ## Output
+
 State your strategy explicitly before writing tests
 
 ## Rules

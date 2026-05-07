@@ -5,16 +5,21 @@ set -euo pipefail
 # generate_opencode.sh — Generate agent configs for OpenCode
 #
 # Usage:
-#   ./generate_opencode.sh --output DIR --agents-dir DIR --agents-json FILE --skills-dir DIR
-#                          [--profession PROFESSION] [--theme THEME]
+#   ./generate_opencode.sh --output DIR [--agents-dir DIR] [--agents-json FILE]
+#                          [--skills-dir DIR] [--profession PROFESSION]
+#                          [--theme THEME]
 #
 # Options:
 #   --output          Output directory for generated agent files (required)
 #   --agents-dir      Directory containing generic agent definitions (.json files)
-#   --agents-json     Path to agents registry JSON file (required)
-#   --skills-dir      Path to skills directory (required)
+#                     (defaults to <repo>/agents-generic)
+#   --agents-json     Path to agents registry JSON file
+#                     (defaults to <repo>/agents.json)
+#   --skills-dir      Path to skills directory
+#                     (defaults to <repo>/skills)
 #   --profession      Profession to generate (optional, filters by profession)
 #   --theme           Theme to generate (optional, filters by theme)
+#   --help, -h        Show this help message
 #
 # The tool mapping file (cli-mapping.json) is always loaded from <repo>/mappings/
 # regardless of --agents-dir or --agents-json.
@@ -22,21 +27,27 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MAPPING_FILE="${SCRIPT_DIR}/../mappings/cli-mapping.json"
+DEFAULT_AGENTS_DIR="${SCRIPT_DIR}/../agents-generic"
+DEFAULT_AGENTS_JSON="${SCRIPT_DIR}/../agents.json"
+DEFAULT_SKILLS_DIR="${SCRIPT_DIR}/../skills"
 OUTPUT_DIR=""
-AGENTS_DIR=""
-AGENTS_JSON=""
-SKILLS_DIR=""
+AGENTS_DIR_OVERRIDE=""
+AGENTS_JSON_OVERRIDE=""
+SKILLS_DIR_OVERRIDE=""
 PROFESSION=""
 THEME=""
 
 usage() {
-    echo "Usage: $0 --output DIR --agents-dir DIR --agents-json FILE --skills-dir DIR [--profession PROFESSION] [--theme THEME]"
+    echo "Usage: $0 --output DIR [OPTIONS]"
     echo ""
     echo "Options:"
     echo "  --output          Output directory for generated agent files (required)"
     echo "  --agents-dir      Directory containing generic agent definitions (.json files)"
-    echo "  --agents-json     Path to agents registry JSON file (required)"
-    echo "  --skills-dir      Path to skills directory (required)"
+    echo "                    (defaults to <repo>/agents-generic)"
+    echo "  --agents-json     Path to agents registry JSON file"
+    echo "                    (defaults to <repo>/agents.json)"
+    echo "  --skills-dir      Path to skills directory"
+    echo "                    (defaults to <repo>/skills)"
     echo "  --profession      Profession to generate (optional, filters by profession)"
     echo "  --theme           Theme to generate (optional, filters by theme)"
     echo "  --help, -h        Show this help message"
@@ -60,7 +71,7 @@ while [[ $# -gt 0 ]]; do
         ;;
     --agents-dir)
         if [[ -n "$2" && "$2" != --* ]]; then
-            AGENTS_DIR="$2"
+            AGENTS_DIR_OVERRIDE="$2"
             shift 2
         else
             echo "Error: --agents-dir requires a value." >&2
@@ -69,7 +80,7 @@ while [[ $# -gt 0 ]]; do
         ;;
     --agents-json)
         if [[ -n "$2" && "$2" != --* ]]; then
-            AGENTS_JSON="$2"
+            AGENTS_JSON_OVERRIDE="$2"
             shift 2
         else
             echo "Error: --agents-json requires a value." >&2
@@ -78,7 +89,7 @@ while [[ $# -gt 0 ]]; do
         ;;
     --skills-dir)
         if [[ -n "$2" && "$2" != --* ]]; then
-            SKILLS_DIR="$2"
+            SKILLS_DIR_OVERRIDE="$2"
             shift 2
         else
             echo "Error: --skills-dir requires a value." >&2
@@ -122,21 +133,26 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+# Apply overrides if provided, otherwise use defaults
+if [ -n "${AGENTS_DIR_OVERRIDE}" ]; then
+    AGENTS_DIR="${AGENTS_DIR_OVERRIDE}"
+else
+    AGENTS_DIR="${DEFAULT_AGENTS_DIR}"
+fi
+if [ -n "${AGENTS_JSON_OVERRIDE}" ]; then
+    AGENTS_JSON="${AGENTS_JSON_OVERRIDE}"
+else
+    AGENTS_JSON="${DEFAULT_AGENTS_JSON}"
+fi
+if [ -n "${SKILLS_DIR_OVERRIDE}" ]; then
+    SKILLS_DIR="${SKILLS_DIR_OVERRIDE}"
+else
+    SKILLS_DIR="${DEFAULT_SKILLS_DIR}"
+fi
+
 # Validate required args
 if [ -z "${OUTPUT_DIR}" ]; then
     echo "Error: --output DIR is required." >&2
-    exit_usage
-fi
-if [ -z "${AGENTS_DIR}" ]; then
-    echo "Error: --agents-dir DIR is required." >&2
-    exit_usage
-fi
-if [ -z "${AGENTS_JSON}" ]; then
-    echo "Error: --agents-json FILE is required." >&2
-    exit_usage
-fi
-if [ -z "${SKILLS_DIR}" ]; then
-    echo "Error: --skills-dir DIR is required." >&2
     exit_usage
 fi
 

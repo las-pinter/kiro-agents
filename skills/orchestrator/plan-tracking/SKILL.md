@@ -16,6 +16,7 @@ Orchestrators should track which plans have been executed and mark them as compl
 ## Plan File Naming Convention
 
 Plans are stored in `{user_home}/agent-notes/planner/plans/` with the format:
+
 - **Active plans:** `YYYY-MM-DD-plan-name.md`
 - **Completed plans:** `YYYY-MM-DD-plan-name-DONE.md`
 - **Blocked plans:** `YYYY-MM-DD-plan-name-BLOCKED.md`
@@ -28,6 +29,7 @@ When a plan has been fully executed:
 ### Step 1: Rename the Plan File
 
 Add `-DONE` suffix before the `.md` extension:
+
 ```bash
 mv ~/agent-notes/planner/plans/YYYY-MM-DD-plan-name.md \
    ~/agent-notes/planner/plans/YYYY-MM-DD-plan-name-DONE.md
@@ -43,9 +45,9 @@ Append a completion section to the end of the plan file:
 
 ## ✅ PLAN COMPLETED
 
-**Completion Date:** YYYY-MM-DD  
-**Completed By:** [Agent name and role]  
-**Commit ID(s):** 
+**Completion Date:** YYYY-MM-DD
+**Completed By:** [Agent name and role]
+**Commit ID(s):**
 - abc1234 - "Commit message"
 - def5678 - "Another commit message" (if multiple)
 
@@ -60,6 +62,7 @@ Append a completion section to the end of the plan file:
 ### Step 3: Reference in Journal
 
 When writing your daily journal, mention the completed plan:
+
 - "Plan at `{user_home}/agent-notes/planner/plans/YYYY-MM-DD-plan-name-DONE.md` was executed successfully!"
 - Include the commit IDs (if there is any) and results
 
@@ -84,6 +87,7 @@ ls ~/agent-notes/planner/plans/*-ABANDONED.md
 ## Partial Completion
 
 If a plan is only partially completed:
+
 - Keep the original filename (no `-DONE` suffix)
 - Add a `## ⚠️ PARTIAL COMPLETION` section instead
 - Document what was done and what remains
@@ -92,6 +96,7 @@ If a plan is only partially completed:
 ## Plan Abandonment
 
 If a plan is no longer relevant or was superseded:
+
 - Rename with `-ABANDONED.md` suffix
 - Add a section explaining why it was abandoned
 - Reference any replacement plans if applicable

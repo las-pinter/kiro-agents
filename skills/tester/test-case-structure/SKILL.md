@@ -6,6 +6,7 @@ description: Language-agnostic structure, naming conventions, and rules for writ
 # Test Case Structure
 
 ## When to Use
+
 When writing any test case — unit, integration, or e2e — in any programming language.
 
 ## Universal Principles
@@ -18,11 +19,13 @@ Test names describe WHAT the code does, not HOW it does it.
 **Implementation** = internal mechanics, method calls, data structures
 
 ❌ Bad (implementation-focused):
+
 - `callsDatabaseQuery`
 - `loopsThrough_array`
 - `test_uses_cache_first`
 
 ✅ Good (behavior-focused):
+
 - `returnsUserWhenIdExists`
 - `returns_empty_list_when_no_results_found`
 - `ReturnsNotFoundForMissingResource`
@@ -30,6 +33,7 @@ Test names describe WHAT the code does, not HOW it does it.
 ### 2. Three Essential Components
 
 Every test name should answer:
+
 - **Context**: What state/input/scenario?
 - **Action**: What behavior is triggered?
 - **Outcome**: What should happen?
@@ -43,6 +47,7 @@ Test names are documentation. Prioritize clarity over brevity or rigid patterns.
 These patterns work in any language. Adapt syntax to your language conventions.
 
 ### Pattern 1: Given-When-Then
+
 ```
 // JavaScript/TypeScript
 it('returns error when cart is empty')
@@ -61,6 +66,7 @@ fn empty_cart_checkout_raises_error()
 ```
 
 ### Pattern 2: Condition-Outcome
+
 ```
 // JavaScript
 it('rejects payment when balance insufficient')
@@ -79,6 +85,7 @@ TestInsufficientBalanceRejectsPayment
 ```
 
 ### Pattern 3: Behavior Description
+
 ```
 // JavaScript
 describe('User Login', () => {
@@ -121,10 +128,10 @@ test: calculate_total_with_discount
   // Arrange
   cart = createCart(items: [item1, item2])
   discount = 0.1
-  
+
   // Act
   total = cart.calculateTotal(discount)
-  
+
   // Assert
   expect(total).equals(90.0)
 ```
@@ -142,6 +149,7 @@ test: cart_operations
 ```
 
 Split into three separate tests:
+
 - `addingItemIncreasesCount`
 - `removingItemDecreasesCount`
 - `emptyCartTotalIsZero`
