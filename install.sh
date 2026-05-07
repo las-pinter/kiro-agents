@@ -8,7 +8,7 @@ set -euo pipefail
 #   ./install.sh [--force] [--dry-run] [--target kiro|opencode|all] [--help]
 #
 # Options:
-#   --force          Overwrite existing files (backs up originals)
+#   --force          Overwrite existing files
 #   --dry-run        Show what would be done without actually doing it
 #   --target TARGET  Which target to install: kiro, opencode, all (default: all)
 #   --help, -h       Show this help message
@@ -56,7 +56,7 @@ usage() {
     echo "Usage: $0 [OPTIONS]"
     echo ""
     echo "Options:"
-    echo "  --force          Overwrite existing files (backs up originals)"
+    echo "  --force          Overwrite existing files"
     echo "  --dry-run        Show what would be done without doing it"
     echo "  --target TARGET  Which target to install: kiro, opencode, all (default: all)"
     echo "  --help, -h       Show this help message"
@@ -72,21 +72,17 @@ while [[ $# -gt 0 ]]; do
         DRY_RUN=true
         shift
         ;;
+    --target=*)
+        TARGET="${1#--target=}"
+        shift
+        ;;
     --target)
         if [[ -z "$2" || "$2" == --* ]]; then
             echo "Error: --target requires a value (kiro, opencode, or all)." >&2
             exit 1
         fi
-        case "$2" in
-        kiro | opencode | all)
-            TARGET="$2"
-            shift 2
-            ;;
-        *)
-            echo "Error: --target must be 'kiro', 'opencode', or 'all', got '$2'." >&2
-            exit 1
-            ;;
-        esac
+        TARGET="$2"
+        shift 2
         ;;
     --help | -h)
         usage
@@ -99,6 +95,15 @@ while [[ $# -gt 0 ]]; do
         ;;
     esac
 done
+
+# Validate --target value
+case "$TARGET" in
+kiro | opencode | all) ;;
+*)
+    echo "Error: --target must be 'kiro', 'opencode', or 'all', got '$TARGET'." >&2
+    exit 1
+    ;;
+esac
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -154,6 +159,22 @@ needs_generation() {
         return 1
     fi
     return 0
+}
+
+# Install a shell alias into a rc file, skipping if already present.
+install_alias() {
+    local name="$1" cmd="$2" rc="$3"
+    local line="alias ${name}='${cmd}'"
+    if grep -qF "$line" "$rc" 2>/dev/null; then
+        echo "  skipped (exists): $name in $rc"
+    else
+        if [[ "$DRY_RUN" == true ]]; then
+            echo "  (dry-run) would add alias $name to $rc"
+        else
+            printf '\n%s\n' "$line" >>"$rc"
+            echo "  installed alias: $name in $rc"
+        fi
+    fi
 }
 
 # Merge a JSON file into a destination JSON file at a given top-level key.
@@ -220,10 +241,12 @@ if [[ "$TARGET" == "kiro" || "$TARGET" == "all" ]]; then
     echo "Installing kiro-agents to $DEST ..."
 
     for dir in personas professions skills; do
-        while IFS= read -r -d '' f; do
-            rel="${f#"$REPO_DIR"/}"
-            copy_file "$f" "$DEST/$rel"
-        done < <(find "$REPO_DIR/$dir" -type f -print0)
+        if [[ -d "$REPO_DIR/$dir" ]]; then
+            while IFS= read -r -d '' f; do
+                rel="${f#"$REPO_DIR"/}"
+                copy_file "$f" "$DEST/$rel"
+            done < <(find "$REPO_DIR/$dir" -type f -print0)
+        fi
     done
 
     # Settings: only install if not already present — never overwrite user customizations
@@ -242,10 +265,12 @@ if [[ "$TARGET" == "opencode" || "$TARGET" == "all" ]]; then
     echo "Installing OpenCode resource files to $OPENCODE_DEST ..."
 
     for dir in personas professions skills; do
-        while IFS= read -r -d '' f; do
-            rel="${f#"$REPO_DIR"/}"
-            copy_file "$f" "$OPENCODE_DEST/$rel"
-        done < <(find "$REPO_DIR/$dir" -type f -print0)
+        if [[ -d "$REPO_DIR/$dir" ]]; then
+            while IFS= read -r -d '' f; do
+                rel="${f#"$REPO_DIR"/}"
+                copy_file "$f" "$OPENCODE_DEST/$rel"
+            done < <(find "$REPO_DIR/$dir" -type f -print0)
+        fi
     done
 
     # -- Generate and merge OpenCode agents --
@@ -306,9 +331,13 @@ if [[ "$TARGET" == "opencode" || "$TARGET" == "all" ]]; then
                 mcp_tmp=$(mktemp)
                 CLEANUP_FILES+=("$mcp_tmp")
                 # Transform mcpServers format → opencode mcp format
-                jq '.mcpServers | to_entries | map({key: .key, value: {type: "remote", url: .value.url, enabled: true}}) | from_entries' \
-                    "$mcp_example" >"$mcp_tmp"
-                merge_json_into "$mcp_tmp" "$OPENCODE_CONFIG" "mcp"
+                if ! jq '.mcpServers | to_entries | map({key: .key, value: {type: "remote", url: .value.url, enabled: true}}) | from_entries' \
+                    "$mcp_example" >"$mcp_tmp" 2>/dev/null; then
+                    echo "  warning: failed to parse mcpServers from $mcp_example, skipping" >&2
+                    rm -f "$mcp_tmp"
+                else
+                    merge_json_into "$mcp_tmp" "$OPENCODE_CONFIG" "mcp"
+                fi
             fi
         else
             echo "  warning: MCP example file not found at $mcp_example" >&2
@@ -323,21 +352,6 @@ fi
 if [[ "$TARGET" == "kiro" || "$TARGET" == "all" ]]; then
     echo ""
     echo "Installing kiro-cli aliases ..."
-
-    install_alias() {
-        local name="$1" cmd="$2" rc="$3"
-        local line="alias ${name}='${cmd}'"
-        if grep -qF "$line" "$rc" 2>/dev/null; then
-            echo "  skipped (exists): $name in $rc"
-        else
-            if [[ "$DRY_RUN" == true ]]; then
-                echo "  (dry-run) would add alias $name to $rc"
-            else
-                printf '\n%s\n' "$line" >>"$rc"
-                echo "  installed alias: $name in $rc"
-            fi
-        fi
-    }
 
     ALIAS_ENTRIES=(
         "kiro-goblin:kiro-cli chat --agent goblin-orchestrator"
@@ -363,6 +377,9 @@ if [[ "$TARGET" == "kiro" || "$TARGET" == "all" ]]; then
             touch "$HOME/.bash_aliases"
         fi
         install_aliases_for_rc "$HOME/.bash_aliases"
+        if [[ "$DRY_RUN" != true ]] && ! grep -qs "bash_aliases" "$HOME/.bashrc"; then
+            echo "  warning: ~/.bashrc may not source ~/.bash_aliases — check your shell config" >&2
+        fi
     fi
 fi
 
@@ -373,26 +390,6 @@ fi
 if [[ "$TARGET" == "opencode" || "$TARGET" == "all" ]]; then
     echo ""
     echo "Installing opencode aliases ..."
-
-    # install_alias is already defined above (kia aliases section is a
-    # separate if block, but both run in the same shell so the function
-    # persists. We define it here too for standalone --target opencode.
-    if ! declare -f install_alias &>/dev/null; then
-        install_alias() {
-            local name="$1" cmd="$2" rc="$3"
-            local line="alias ${name}='${cmd}'"
-            if grep -qF "$line" "$rc" 2>/dev/null; then
-                echo "  skipped (exists): $name in $rc"
-            else
-                if [[ "$DRY_RUN" == true ]]; then
-                    echo "  (dry-run) would add alias $name to $rc"
-                else
-                    printf '\n%s\n' "$line" >>"$rc"
-                    echo "  installed alias: $name in $rc"
-                fi
-            fi
-        }
-    fi
 
     OPENCODE_ALIAS_ENTRIES=(
         "opencode-goblin:opencode --agent goblin-orchestrator"
@@ -418,6 +415,9 @@ if [[ "$TARGET" == "opencode" || "$TARGET" == "all" ]]; then
             touch "$HOME/.bash_aliases"
         fi
         install_aliases_for_rc "$HOME/.bash_aliases"
+        if [[ "$DRY_RUN" != true ]] && ! grep -qs "bash_aliases" "$HOME/.bashrc"; then
+            echo "  warning: ~/.bashrc may not source ~/.bash_aliases — check your shell config" >&2
+        fi
     fi
 fi
 
@@ -430,6 +430,6 @@ echo "Done!"
 if [[ "$DRY_RUN" == true ]]; then
     echo "This was a dry run — no files were modified."
 fi
-echo "Re-run with --force to overwrite existing files (backs up originals)."
-echo "Edit files in $DEST directly to customize — they won't be overwritten unless you use --force."
+echo "Re-run with --force to overwrite existing files."
+echo "Edit files in $DEST directly to customize — they won't be overwritten without --force."
 echo "Reload your shell: source ~/.zshrc (zsh) or source ~/.bashrc (bash)"
