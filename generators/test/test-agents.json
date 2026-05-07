@@ -24,6 +24,11 @@
       "personaFile": "test-goblin.md",
       "description": "Overpowered agent — nearly everything allowed, maximum access.",
       "welcomeMessage": "I am the mightiest goblin. All paths are open to me."
+    },
+    "orchestrator": {
+      "personaFile": "test-goblin.md",
+      "description": "Orchestrator test agent",
+      "welcomeMessage": "Hurrdurr."
     }
   }
 }

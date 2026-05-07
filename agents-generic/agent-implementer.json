@@ -4,7 +4,6 @@
   "tools": {
     "default": "deny",
     "code": "allow",
-    "external_directory": "ask",
     "glob": "allow",
     "grep": "allow",
     "read": "allow",
