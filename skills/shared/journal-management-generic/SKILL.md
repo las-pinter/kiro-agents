@@ -1,5 +1,5 @@
 ---
-name: journal-management
+name: journal-management-generic
 description: Generic hierarchical journal system for any agent's operational context with time-based consolidation. Use this skill whenever you need to read, write, or consolidate operational journals — including at session startup, after completing tasks, before ending a session, or when reviewing past work. This skill works for ANY agent type (persona, non-persona, implementer, tester, researcher, etc.). Do NOT attempt to manage journal context manually; always consult this skill for all journal operations.
 ---
 
