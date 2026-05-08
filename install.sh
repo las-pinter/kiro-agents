@@ -134,6 +134,23 @@ kiro | opencode | all) ;;
 esac
 
 # ---------------------------------------------------------------------------
+# Target application checks
+# ---------------------------------------------------------------------------
+if [[ "$TARGET" == "kiro" || "$TARGET" == "all" ]]; then
+    if ! command -v kiro-cli &>/dev/null; then
+        echo "Error: --target kiro requires 'kiro-cli' to be installed." >&2
+        exit 1
+    fi
+fi
+
+if [[ "$TARGET" == "opencode" || "$TARGET" == "all" ]]; then
+    if ! command -v opencode &>/dev/null; then
+        echo "Error: --target opencode requires 'opencode' to be installed." >&2
+        exit 1
+    fi
+fi
+
+# ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
