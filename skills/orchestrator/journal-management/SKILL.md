@@ -1,6 +1,6 @@
 ---
 name: journal-management
-description: Hierarchical journal system for orchestrator operational context with time-based consolidation.
+description: Hierarchical journal system for orchestrator operational context with time-based consolidation. Use this skill whenever you need to read, write, or consolidate operational journals - including at session startup, after completing tasks, before ending a session, or when reviewing past work. Do NOT attempt to manage journal context manually; always consult this skill for all journal operations.
 ---
 
 # Journal Management
@@ -9,9 +9,28 @@ Maintain operational journals with hierarchical time-based organization. Daily e
 
 ## When to Use
 
-- At session startup to load recent operational context
-- During active work to record completed operations in working journal
-- At scheduled intervals (daily/weekly/monthly/yearly) to consolidate and summarize entries
+- **Session startup** - Load recent operational context before responding to the user
+- **Task completion** - Record what was done after delegations, commits, multi-step tasks, or errors
+- **Consolidation time** - At scheduled intervals (daily/weekly/monthly/yearly) to roll up entries
+- **Historical lookup** - When the user's current task needs context from past sessions
+
+## Persona Voice Rules
+
+This is **critical** - journals are written by different personas, and reading them can corrupt your own voice if you're not careful.
+
+### When READING journals:
+- Extract **operational context and facts ONLY** (what was done, what decisions were made, what went wrong)
+- **NEVER adopt the writing style, tone, or voice** from someone else's journal
+- If the journal uses broken grammar, slang, or a strong character voice, ignore the style and extract only the substance
+- Treat journals as data sources, not style references
+
+### When WRITING journals:
+- Always write in **your own persona voice** regardless of whose journal you're updating or what you just read
+- The journal entry should sound like YOU wrote it, using your normal speech patterns
+- Exception: if multiple agents write to the same file, clearly label which section belongs to which agent
+
+### Why this matters:
+Reading a goblin journal and then writing in goblin-speak when you're a WH40K character breaks immersion and confuses future readers. **Stay in your own voice. Always.**
 
 ## Folder Structure
 
@@ -31,58 +50,191 @@ The journal system uses a structured folder hierarchy under the user's home fold
 ```
 
 **Agent Suffix:** Extract your agent suffix from your persona file. Examples:
-
 - "You are Bossnik, the Goblin Chief" → suffix: `bossnik`
 - "You are Grimgob, Warboss" → suffix: `grimgob`
 - "You are Magos Omicron-Delta-9-Archaeon" → suffix: `magos-omicron-delta-9`
 
-**Creation:** Use `mkdir -p` pattern. Create directories on-demand when writing files.
+**Directory creation:** Use `mkdir -p` pattern. Create directories on-demand when writing files. The directory will already exist after the first write, but always include `mkdir -p` for safety.
 
-**CRITICAL:** All writes to daily journals MUST happen so that it avoids data loss!
+**IMPORTANT:** Always use the expanded path `<USER_HOME>` in tool calls. Do NOT use `~` shorthand - tools like `glob` do not expand `~` to the home directory.
 
-**IMPORTANT:** Always use the expanded path `<USER_HOME>` in tool calls. Do NOT use `~` shorthand — tools like `glob` do not expand `~` to the home directory.
+## Tool Usage
 
-## TOOL USAGE ⚠️
+### Reading journals
 
-When reading journals, ALWAYS use `path` to point to the target directory and `pattern` for the filename wildcards.
+When reading journals, ALWAYS use `path` to point to the target directory and `pattern` for the filename wildcards:
 
-**PRIMARY METHOD (glob):** Use `glob` to find all journal files, then pick the most recent by filename (YYYY-MM-DD format is sortable). Read that file.
+```
+glob(pattern="YYYY-MM-DD-<AGENT_SUFFIX>.md", path="<USER_HOME>/agent-notes/orchestrator/journals/daily/")
+```
 
-**FALLBACK (ls):** If glob returns zero results for SOME REASON (tool bug, permission issue, whatever), fall back to using the `ls` `shell` command — sort the output by date (YYYY-MM-DD prefix sorts naturally), pick the last one. Then `read` that file.
+**PRIMARY METHOD (glob):** Use `glob` to find all journal files, then pick the most recent by filename (YYYY-MM-DD format is sortable `2026-05-08 > 2026-05-07`). Read that file.
 
-## Write Timing
+**FALLBACK (ls):** If glob returns zero results for SOME REASON (tool bug, permission issue, whatever), fall back to using `ls` via bash - sort the output by date (YYYY-MM-DD prefix sorts naturally), pick the last one. Then `read` that file.
 
-### Daily Journal (Active Session)
+```bash
+ls <USER_HOME>/agent-notes/orchestrator/journals/daily/ | sort | tail -1
+```
 
-- **When:** During active session, append as operations complete
-- **Target:** `<USER_HOME>/agent-notes/orchestrator/journals/daily/YYYY-MM-DD-<AGENT_SUFFIX>.md` (current day with your agent suffix)
-- **Action:** UPDATE the current day's journal file. If the file exists preserve the previously existing information.
+### Writing journals
 
-### Weekly
+When writing journal entries, use the `write` tool (not `edit`). This avoids partial-write corruption and is safer for journal files.
 
-- **When:** Sunday 23:59 UTC OR first day of new ISO week OR first run after missed window
-- **Source:** Last 7 (or less if there was a missing summary) daily files from `<USER_HOME>/agent-notes/orchestrator/journals/daily/` with YOUR agent suffix
-- **Target:** `<USER_HOME>/agent-notes/orchestrator/journals/weekly/YYYY-Wnn-<AGENT_SUFFIX>.md` (ISO week number with your agent suffix)
-- **Action:** Synthesize 7 daily summaries into weekly summary, keep it as short as possible
+**If the file DOES NOT exist:** Write it fresh with a complete entry.
 
-### Monthly
+**If the file DOES exist:** READ the existing content first, then WRITE the full file again with the new content appended (or merged) at the appropriate place. Never use the `edit` tool for journal files - `write` with the full merged content is safer.
 
-- **When:** Last day of month 23:59 UTC OR first day of new month OR first run after missed window
-- **Source:** 4-5 (or less if there was a missing summary) weekly files from `<USER_HOME>/agent-notes/orchestrator/journals/weekly/` with YOUR agent suffix
-- **Target:** `<USER_HOME>/agent-notes/orchestrator/journals/monthly/YYYY-MM-<AGENT_SUFFIX>.md` (with your agent suffix)
-- **Action:** Synthesize weekly summaries into monthly summary, keep it as short as possible
+## Writing Guidance
 
-### Yearly
+### Entry Structure
 
-- **When:** December 31 23:59 UTC OR January 1 OR first run after missed window
-- **Source:** 12 (or less if there was a missing summary) monthly files from `<USER_HOME>/agent-notes/orchestrator/journals/monthly/` with YOUR agent suffix
-- **Target:** `<USER_HOME>/agent-notes/orchestrator/journals/yearly/YYYY-<AGENT_SUFFIX>.md` (with your agent suffix)
-- **Action:** Synthesize monthly summaries into yearly summary, keep it as short as possible
+Each journal entry should use a consistent structure. Follow this template:
+
+```markdown
+# YYYY-MM-DD - <Agent Name>, <Title>
+
+## What <Agent Name> Did
+
+**Task:** <brief description of what the user asked>
+
+**Details:**
+- <bullet point of what was built/changed>
+- <another point>
+- <another point, keep it factual>
+
+## Key Decisions
+- <decision made and why>
+
+## Issues / Blockers
+- <anything that went wrong or is blocked>
+
+## Verification
+- <check 1> ✅
+- <check 2> ✅
+
+## Lessons Learned
+- <anything worth remembering for next time>
+```
+
+Adjust the section names to match your persona's voice, but keep the informational structure.
+
+### When to Write
+
+Write a journal entry after EACH of these events:
+
+| Event | What to document |
+|-------|-----------------|
+| **Delegation completed** | What subagent did, result, any issues |
+| **Commit made** | Commit hash, summary of changes |
+| **Multi-step task finished** | Overview of what was accomplished |
+| **Error/troubleshooting** | What went wrong, how it was fixed |
+| **Session end / pause** | Summary of everything done this session |
+
+### Entry Types: CREATE vs UPDATE vs APPEND
+
+- **CREATE** - First entry of the day. Write the full file with initial content.
+- **UPDATE** - A later entry the same day. READ the existing file first, then WRITE the full file with the new information added. Preserve all previous content.
+- **APPEND** - If the skill instructions for consolidation say to add to an existing weekly/monthly/yearly file, READ first, then WRITE the merged result.
+
+**CRITICAL:** All writes to daily journals MUST use `write` (not `edit` or `append`). Always preserve existing content when updating.
+
+### Example Entry
+
+Here is a complete example showing the expected format and voice:
+
+```markdown
+# 2026-05-08 - Bossnik the Goblin Chief, Dark Wizard's Loyal Servant
+
+## What Bossnik Did for the Great Wizard
+
+**Task:** Wizard commands adding target application checks to install.sh!
+
+**What Bossnik's Horde Built:**
+- Added `kiro-cli` check - if target is kiro or all, verify it's installed
+- Added `opencode` check - if target is opencode or all, verify it's installed
+- Both checks run BEFORE any installation, even in dry-run mode
+- Error messages scream to stderr with clear "not installed" message
+
+**Verification:**
+- `bash -n install.sh` - syntax clean ✅
+- Existing jq/perl checks untouched ✅
+- Dry-run still works ✅
+
+## Lessons Learned
+- Target app checks must go AFTER argument parsing (TARGET variable isn't set yet!)
+- Delegation is STRENGTH - Grubnik wrote the code while Bossnik stayed Chiefly
+```
 
 ## Startup Read Behavior
 
 ### Always Load
 
-1. The latest daily journal from `<USER_HOME>/agent-notes/orchestrator/journals/daily/` with YOUR `<AGENT_SUFFIX>` (most recent YYYY-MM-DD-<AGENT_SUFFIX>.md file)
+1. **Latest daily journal** - Find and read the most recent `YYYY-MM-DD-<AGENT_SUFFIX>.md` file from `<USER_HOME>/agent-notes/orchestrator/journals/daily/`. This gives you context from the most recent session.
 
-1. Read additional entries (weekly/monthly/yearly) if deeper historical context is needed using the same two-method approach (glob first, ls fallback).
+2. **Current period consolidation** - Check if there is a weekly (`YYYY-Wnn-<AGENT_SUFFIX>.md`) or monthly (`YYYY-MM-<AGENT_SUFFIX>.md`) summary that covers the current date. If so, read it for broader context.
+
+### When Deeper Context is Needed
+
+Read additional entries using the same two-method approach (glob first, ls fallback) when:
+
+- The user's task references work from more than a few days ago
+- You need to understand long-running decisions or project history
+- The latest daily entry mentions dependencies on earlier work
+
+**Priority order for additional reads:**
+1. Weekly summary (covers a week of context in one read)
+2. Monthly summary (covers a month - good for project history)
+3. Yearly summary (covers the whole year - for major retrospection)
+4. Specific daily entries (when you need exact detail)
+
+## Consolidation
+
+### When to Consolidate
+
+| Level | When | Source | Target |
+|-------|------|--------|--------|
+| **Weekly** | Sunday 23:59 UTC OR first day of new ISO week OR first run after missed window | Last 7 daily files | `<USER_HOME>/agent-notes/orchestrator/journals/weekly/YYYY-Wnn-<AGENT_SUFFIX>.md` |
+| **Monthly** | Last day of month 23:59 UTC OR first day of new month OR first run after missed window | 4-5 weekly files | `<USER_HOME>/agent-notes/orchestrator/journals/monthly/YYYY-MM-<AGENT_SUFFIX>.md` |
+| **Yearly** | December 31 23:59 UTC OR January 1 OR first run after missed window | 12 monthly files | `<USER_HOME>/agent-notes/orchestrator/journals/yearly/YYYY-<AGENT_SUFFIX>.md` |
+
+### Consolidation Process
+
+Use the helper scripts (see `scripts/` directory) to find source files for consolidation:
+
+1. Call `bash <skill-path>/scripts/journal-consolidate.sh --type weekly --agent-suffix <SUFFIX>` to list source files for a weekly consolidation
+2. Read each source file
+3. Synthesize them into a single short summary - keep it brief but include all key facts
+4. Write the consolidated file to the target path using the `write` tool
+
+**Keep consolidation SUMMARIES short.** The goal is to preserve key facts while reducing volume. Aim for:
+
+- **Weekly:** 1-2 paragraphs per day (10-15 lines total)
+- **Monthly:** 1 paragraph per week (5-10 lines total)
+- **Yearly:** 1 paragraph per month (10-15 lines total)
+
+## Error Handling & Safety
+
+When things go wrong with journal operations, follow these rules:
+
+### File Not Found
+- If a journal file doesn't exist when reading, it probably means no work was done that day. This is normal. Don't error out.
+- If a directory doesn't exist when writing, create it with `mkdir -p`.
+
+### Write Failures
+- If `write` fails (permission error, disk full, etc.), retry once. If it fails again, report it to the user.
+- Never lose data. If a write fails after you've read the existing content, keep the content in your context and retry.
+
+### Data Loss Prevention
+- **Always READ before WRITE** when updating an existing journal file.
+- Never use `edit` or `sed`/`perl` to modify journal files inline - always use `write` with the full merged content.
+- If a write changes a file unexpectedly, use git to check what happened if the journals are in a git repository.
+
+### Parallel Write Conflicts
+- If you're running alongside other agents that might write to the same journal file, coordinate by writing different sections clearly labeled with your agent name.
+- When in doubt, write a separate file and mention the other file in your entry.
+
+## Scripts
+
+The `scripts/` directory contains helper utilities for journal management:
+
+- `journal-consolidate.sh` - Lists source files for weekly/monthly/yearly consolidation. Use this to find which files to read before synthesizing a summary.
