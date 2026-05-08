@@ -4,13 +4,13 @@
 # ─────────────────────────────────────────────────────────────────
 #  Usage:
 #    bash journal-consolidate.sh --type weekly|monthly|yearly \
-#      --agent-suffix SUFFIX [--date YYYY-MM-DD] [--journal-dir PATH]
+#      [--date YYYY-MM-DD] [--journal-dir PATH]
 #
 #  Options:
 #    --type TYPE       Consolidation type: weekly, monthly, or yearly (required)
-#    --agent-suffix S  Agent suffix like 'bossnik', 'grimgob' (required)
 #    --date DATE       Reference date (default: today, format: YYYY-MM-DD)
-#    --journal-dir DIR Journal base directory (default: ~/agent-notes/orchestrator/journals)
+#    --journal-dir DIR Journal base directory with daily/weekly/monthly/yearly subdirs
+#                      (default: ~/agent-notes/<AGENT_NAME>/journals)
 #    --help, -h        Show this help
 #
 #  Output:
@@ -18,21 +18,20 @@
 #    Also prints the target file path as the last line prefixed with "TARGET:".
 #
 #  Example:
-#    bash journal-consolidate.sh --type weekly --agent-suffix bossnik
-#    # → Lists last 7 daily files for Bossnik's weekly consolidation
+#    bash journal-consolidate.sh --type weekly --journal-dir ~/agent-notes/my-agent/journals
+#    # → Lists last 7 daily files for consolidation
 # ─────────────────────────────────────────────────────────────────
 
 set -euo pipefail
 
 # ── Defaults ────────────────────────────────────────────────────
 TYPE=""
-AGENT_SUFFIX=""
 REF_DATE=$(date +%Y-%m-%d)
-JOURNAL_DIR="$HOME/agent-notes/orchestrator/journals"
+JOURNAL_DIR=""
 
 # ── Arg parsing ──────────────────────────────────────────────────
 usage() {
-    echo "Usage: $0 --type TYPE --agent-suffix SUFFIX [--date YYYY-MM-DD] [--journal-dir DIR]"
+    echo "Usage: $0 --type TYPE [--date YYYY-MM-DD] [--journal-dir DIR]"
     echo ""
     echo "Types: weekly, monthly, yearly"
     exit 0
@@ -50,18 +49,6 @@ while [[ $# -gt 0 ]]; do
             exit 1
         fi
         TYPE="$2"
-        shift 2
-        ;;
-    --agent-suffix=*)
-        AGENT_SUFFIX="${1#--agent-suffix=}"
-        shift
-        ;;
-    --agent-suffix)
-        if [[ -z "$2" || "$2" == --* ]]; then
-            echo "Error: --agent-suffix requires a value" >&2
-            exit 1
-        fi
-        AGENT_SUFFIX="$2"
         shift 2
         ;;
     --date=*)
@@ -103,8 +90,8 @@ if [[ -z "$TYPE" ]]; then
     echo "Error: --type is required (weekly, monthly, or yearly)" >&2
     exit 1
 fi
-if [[ -z "$AGENT_SUFFIX" ]]; then
-    echo "Error: --agent-suffix is required" >&2
+if [[ -z "$JOURNAL_DIR" ]]; then
+    echo "Error: --journal-dir is required (e.g., ~/agent-notes/my-agent/journals)" >&2
     exit 1
 fi
 if [[ "$TYPE" != "weekly" && "$TYPE" != "monthly" && "$TYPE" != "yearly" ]]; then
@@ -118,18 +105,12 @@ if ! date -d "$REF_DATE" >/dev/null 2>&1; then
     exit 1
 fi
 
-# Expand tilde in journal-dir if present (must be done before path construction)
-JOURNAL_DIR="${JOURNAL_DIR/#\~/$HOME}"
-
-# Validate agent suffix is safe for path/glob use
-if [[ ! "$AGENT_SUFFIX" =~ ^[a-zA-Z0-9_-]+$ ]]; then
-    echo "Error: --agent-suffix must contain only letters, digits, hyphens, and underscores" >&2
-    exit 1
-fi
-
 YEAR=$(date -d "$REF_DATE" +%Y)
 MONTH=$(date -d "$REF_DATE" +%m)
 WEEK_NUM=$(date -d "$REF_DATE" +%V)  # ISO week number
+
+# Expand tilde if present
+JOURNAL_DIR="${JOURNAL_DIR/#\~/$HOME}"
 
 # ── Weekly consolidation ─────────────────────────────────────────
 weekly_consolidate() {
@@ -140,12 +121,12 @@ weekly_consolidate() {
         exit 1
     fi
 
-    # Find all daily files for this agent, sorted newest first
+    # Find all daily markdown files, sorted newest first
     local all_files
-    all_files=$(find "$daily_dir" -maxdepth 1 -name "*-$AGENT_SUFFIX.md" -type f 2>/dev/null | sort -r) || true
+    all_files=$(find "$daily_dir" -maxdepth 1 -name "????-??-??.md" -type f 2>/dev/null | sort -r) || true
 
     if [[ -z "$all_files" ]]; then
-        echo "Error: no daily journal files found for suffix '$AGENT_SUFFIX'" >&2
+        echo "Error: no daily journal files found in $daily_dir" >&2
         exit 1
     fi
 
@@ -162,7 +143,7 @@ weekly_consolidate() {
     echo "$source_files"
 
     # Print target
-    local target="$JOURNAL_DIR/weekly/$YEAR-W$WEEK_NUM-$AGENT_SUFFIX.md"
+    local target="$JOURNAL_DIR/weekly/$YEAR-W$WEEK_NUM.md"
     echo "TARGET:$target"
 }
 
@@ -175,12 +156,12 @@ monthly_consolidate() {
         exit 1
     fi
 
-    # Find weekly files for this agent — last 5 weeks heuristic (approximates a month)
+    # Find weekly files for this year
     local source_files
-    source_files=$(find "$weekly_dir" -maxdepth 1 -name "$YEAR-W*-$AGENT_SUFFIX.md" -type f 2>/dev/null | sort) || true
+    source_files=$(find "$weekly_dir" -maxdepth 1 -name "$YEAR-W*.md" -type f 2>/dev/null | sort) || true
 
     if [[ -z "$source_files" ]]; then
-        echo "Error: no weekly journal files found for '$YEAR' and suffix '$AGENT_SUFFIX'" >&2
+        echo "Error: no weekly journal files found for '$YEAR' in $weekly_dir" >&2
         exit 1
     fi
 
@@ -188,7 +169,7 @@ monthly_consolidate() {
     source_files=$(echo "$source_files" | tail -n 5)
 
     echo "$source_files"
-    local target="$JOURNAL_DIR/monthly/$YEAR-$MONTH-$AGENT_SUFFIX.md"
+    local target="$JOURNAL_DIR/monthly/$YEAR-$MONTH.md"
     echo "TARGET:$target"
 }
 
@@ -203,15 +184,15 @@ yearly_consolidate() {
 
     # Find all monthly files for this year
     local source_files
-    source_files=$(find "$monthly_dir" -maxdepth 1 -name "$YEAR-*-$AGENT_SUFFIX.md" -type f 2>/dev/null | sort) || true
+    source_files=$(find "$monthly_dir" -maxdepth 1 -name "$YEAR-*.md" -type f 2>/dev/null | sort) || true
 
     if [[ -z "$source_files" ]]; then
-        echo "Error: no monthly journal files found for '$YEAR' and suffix '$AGENT_SUFFIX'" >&2
+        echo "Error: no monthly journal files found for '$YEAR' in $monthly_dir" >&2
         exit 1
     fi
 
     echo "$source_files"
-    local target="$JOURNAL_DIR/yearly/$YEAR-$AGENT_SUFFIX.md"
+    local target="$JOURNAL_DIR/yearly/$YEAR.md"
     echo "TARGET:$target"
 }
 
