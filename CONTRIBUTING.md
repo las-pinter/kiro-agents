@@ -11,10 +11,10 @@
 - [Branch & PR Workflow](#branch--pr-workflow)
 - [Commit Messages](#commit-messages)
 - [What You Can Contribute](#what-you-can-contribute)
-   - [New Persona / Theme](#new-persona--theme)
-   - [New Profession](#new-profession)
-   - [Shell Script Changes](#shell-script-changes)
-   - [JSON Changes](#json-changes)
+  - [New Persona / Theme](#new-persona--theme)
+  - [New Profession](#new-profession)
+  - [Shell Script Changes](#shell-script-changes)
+  - [JSON Changes](#json-changes)
 - [CI Checks](#ci-checks)
 - [File Structure Reference](#file-structure-reference)
 
@@ -189,7 +189,7 @@ find . -name "*.json" | xargs -I{} jq empty {}
 
 ## File Structure Reference
 
-```
+```text
 persona-agents/
 ├── agents.json                  # Agent registry — add theme/profession entries here
 ├── agents-generic/              # Generic agent definitions (tool permissions, schemas)
