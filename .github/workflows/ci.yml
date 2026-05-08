@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
 jobs:
   validate:
     name: Validate & Lint
@@ -44,17 +47,7 @@ jobs:
             [ -x "$f" ] && echo "✅ $f is executable" || { echo "❌ $f is not executable"; exit 1; }
           done
 
-      # Test the generator actually runs without errors
-      - name: Test generator script
+      # Run the full generator test suite (kiro + opencode) against reference output
+      - name: Run generator test suite
         run: |
-          mkdir -p /tmp/test-agents
-          bash generators/generate_kiro.sh --output /tmp/test-agents
-          echo "Generated files:"
-          ls /tmp/test-agents/
-
-      # Make sure generated agents are valid JSON
-      - name: Validate generated agent output
-        run: |
-          find /tmp/test-agents -name "*.json" | while read f; do
-            jq empty "$f" && echo "✅ $f" || { echo "❌ $f is invalid JSON"; exit 1; }
-          done
+          bash generators/test/test_runner.sh
