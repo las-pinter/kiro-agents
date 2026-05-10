@@ -1,6 +1,7 @@
 # Generated files
 /.agents-*/
 *.test-output
+*-workspace
 
 # Editor files
 .vscode/
