@@ -1,108 +1,373 @@
 ---
 name: code-review-checklist
-description: Structured checklist for reviewing code changes thoroughly and consistently.
+description: >-
+  Structured, methodology-driven checklist for reviewing code changes with
+  depth and consistency. Whenever you need to review a pull request, assess
+  code quality, evaluate implementation work, or conduct a code audit — for
+  any language, framework, or project — use this skill to guide your review.
+  This is NOT optional for reviews: always load this skill when reviewing code.
+  Includes severity taxonomy, comment crafting guide, anti-patterns,
+  domain-specific checklists, and PR size strategies.
 ---
 
 # Code Review Checklist
 
 ## When to Use
 
-- When reviewing a pull request or code changes before merge
+- **Always** when reviewing a pull request or code changes before merge
 - When evaluating existing code for quality, correctness, or standards compliance
 - When conducting a thorough assessment of implementation work
+- When mentoring junior developers through code reviews
 
-Use this checklist when reviewing code. Not every item applies to every PR — focus on what's relevant.
+Not every item applies to every PR — focus on what's relevant, but always run
+through the methodology first.
 
-## 1. PR Overview (First Pass)
+---
 
-- Does the PR description clearly explain what and why?
-- Do all changes logically belong in this PR (no unrelated changes)?
-- Is the scope appropriate — small enough to review thoroughly?
-- Does it match the linked ticket/issue/spec?
-- Are README, docs, or API specs updated if behavior changed?
+## Before You Begin: Review Mindset
 
-## 2. Design & Architecture
+A great review is **collaborative, not adversarial**. Your goal is to catch bugs,
+improve quality, and share knowledge — not to prove superiority.
 
-- Does the overall design make sense? Do the pieces interact correctly?
-- Does it follow existing architectural patterns in the codebase?
-- Does it belong here, or should it be a library/shared module?
-- Does it make future changes easier or harder?
+- **Curiosity over criticism:** Ask "what if X happens?" instead of "this is wrong"
+- **Specific over vague:** Point to exact lines and explain the *why*
+- **Balanced feedback:** Acknowledge good solutions, not just problems
+- **Timely, not rushed:** Give the PR the attention it deserves, but don't block the team
 
-## 3. Correctness & Functionality
+---
 
-- Does the code do what the developer intended?
-- Are edge cases handled?
-- Are there potential race conditions, deadlocks, or concurrency issues?
-- Does it handle failure modes gracefully (errors, timeouts, partial failures)?
+## The Review Methodology (6 Steps)
 
-## 4. Complexity
+### Step 1: Scope the Change
+Before reading a single line of diff, understand the context:
+- Read the PR title, description, and linked ticket
+- Check what files were changed (not just count — which *areas*)
+- Identify whether this is a feature, bugfix, refactor, or dependency change
+- Check if docs/specs need updating (and if they were)
 
-- Is any function/class more complex than it needs to be?
-- Does each function/class do one thing (Single Responsibility Principle)?
-- Can a new developer understand this code quickly?
-- Is there over-engineering or speculative generality (YAGNI)?
+### Step 2: High-Level Pass — Design & Structure
+Read the overall shape of the change:
+- Does the approach make sense? Is there a simpler way?
+- Does the change belong where it's placed?
+- Does it respect existing architectural boundaries?
+- Are new abstractions justified?
 
-## 5. Security
+### Step 3: Deep Dive — Correctness & Logic
+Read every changed line carefully:
+- Does the logic handle the happy path AND edge cases?
+- Are there off-by-one errors, race conditions, or state corruption risks?
+- Do the tests actually verify the right behavior?
+- Run the affected tests in your head: would they fail if the code broke?
 
-- Are all user inputs validated and sanitized?
-- Is authentication/authorization enforced correctly?
-- Is sensitive data (PII, credentials, tokens) handled safely — not logged, not exposed?
-- Are there SQL injection, XSS, or other injection risks?
+### Step 4: Cross-Cutting Pass — Security, Ops, Performance
+Check concerns that span the whole change:
+- Security: injection, auth, data exposure, secret handling
+- Observability: logging, metrics, error reporting
+- Performance: N+1 queries, unnecessary work, resource leaks
+- Resilience: timeouts, retries, graceful degradation
 
-## 6. Tests
+### Step 5: Craft & Organize Comments
+Group related feedback, assign severity, and write clearly (see Comment Crafting below).
 
-- Are tests included in the same PR as the code?
-- Do tests cover the happy path, failure cases, and edge cases?
-- Will tests actually fail when the code is broken?
-- Are tests readable and do they reflect real-world scenarios?
+### Step 6: Follow Up
+After the author responds:
+- Verify blocker/critical fixes were applied correctly
+- Re-review if the change was significant
+- Approve when all blockers are resolved
 
-## 7. Error Handling & Resilience
+---
 
-- Are errors caught and handled explicitly (not swallowed silently)?
-- Are error messages meaningful and actionable?
-- Do optional features degrade gracefully without breaking core flows?
+## Issue Severity Taxonomy
 
-## 8. Performance
+Label every issue with its severity so the author knows what to prioritize:
 
-- Are there unnecessary database calls, N+1 queries, or redundant network requests?
-- Is caching used appropriately?
-- Are there obvious algorithmic inefficiencies?
-- Focus on the 20% of optimizations that produce 80% of results — don't over-optimize.
+| Severity | Label | Meaning | Example |
+|----------|-------|---------|---------|
+| 🔴 Blocker | `BLOCKER` | Must fix before merge. Bug, security hole, or spec violation. | "This SQL query is vulnerable to injection" |
+| 🟠 Critical | `CRITICAL` | Should fix before merge. Likely causes bugs in production. | "Missing input validation on user IDs" |
+| 🟡 Important | `IMPORTANT` | Should fix, doesn't block merge. May cause future issues. | "No test for the pagination edge case" |
+| 🔵 Suggestion | `SUGGESTION` | Nice to have. Improves code quality or maintainability. | "Consider extracting this into a helper" |
+| ⚪ Nitpick | `NIT` | Style preference only. Never blocks a PR. | "Minor: trailing whitespace on line 42" |
 
-## 9. Naming & Readability
+**Rule:** Start each review comment with the severity label so the author can triage at a glance.
 
-- Are variable, function, and class names descriptive and unambiguous?
-- Is the code self-explanatory, or does it require excessive comments to understand?
+---
 
-## 10. Comments & Documentation
+## The Full Checklist
 
-- Do comments explain why, not what?
-- Are there outdated comments or TODOs that can be removed?
-- Is public API / module-level documentation present and accurate?
+### 1. PR Overview (Scoping)
 
-## 11. Style & Consistency
+- [ ] PR description clearly explains **what** and **why** (not just how)
+- [ ] All changes logically belong in this PR (no unrelated formatting changes)
+- [ ] Scope is appropriate — small enough to review thoroughly
+- [ ] Matches the linked ticket/issue/spec (no scope creep)
+- [ ] README, docs, API specs, or ADRs updated if behavior changed
 
-- Does the code follow the team's style guide and conventions?
-- Is formatting consistent with the surrounding codebase?
-- Style-only nits should be prefixed with "Nit:" and never block a PR alone.
+**Good:** "Adds user search by email. Required for admin panel (ticket #422). New /users/search endpoint."
+**Needs work:** "fix search"
 
-## 12. Observability & Operations
+### 2. Design & Architecture
 
-- Are new features covered by logging, metrics, or alerts?
-- Are log statements at appropriate levels (not logging PII)?
+- [ ] Overall design makes sense for the problem
+- [ ] Follows existing architectural patterns in the codebase (or diverges with good reason)
+- [ ] Abstractions are justified — not premature, not missing
+- [ ] Makes future changes easier, not harder
+- [ ] Belongs in this location vs. a shared module/library
 
-## Reviewer Conduct
+**Watch for:** Leaking data-layer concerns into presentation code; mixing responsibilities in a single module; over-abstracting a one-use case.
 
-- Read every changed line — don't skim.
-- Look at changes in the context of the whole file/system, not just the diff.
-- Raise out-of-scope issues as separate tasks; don't block the PR for them.
-- Prefer asking questions over making demands.
-- Prefix nitpicks with "Nit:". Use "we"/"this line" instead of "you".
-- Acknowledge good work — not just problems.
+### 3. Correctness & Functionality
+
+- [ ] Code does what the developer intended (read the tests to understand intent)
+- [ ] Edge cases handled: empty/null/zero values, boundary conditions, invalid input
+- [ ] Concurrency: race conditions, deadlocks, data races, atomicity
+- [ ] State mutations are safe and predictable
+- [ ] Failure modes handled: errors, timeouts, partial failures, network blips
+- [ ] Idempotency where expected (retries won't cause double-processing)
+
+**Good:** "Handles empty result set on line 89 with an early return."
+**Needs work:** "Assumes API always returns at least one result — crashes on empty response."
+
+### 4. Complexity
+
+- [ ] Each function/class does **one thing** (Single Responsibility Principle)
+- [ ] No function is doing more than it needs to — decompose if necessary
+- [ ] A new developer could understand this code within a minute or two
+- [ ] No over-engineering (YAGNI — speculative generality removed)
+- [ ] Cyclomatic complexity is reasonable — deep nesting extracted into helpers
+
+**Watch for:** Functions over 40-50 lines; classes over 300 lines; conditionals nested 4+ deep; the "one more field" class that keeps growing.
+
+### 5. Security
+
+- [ ] All user/input data validated and sanitized at trust boundaries
+- [ ] Authentication and authorization enforced on every protected path
+- [ ] Sensitive data (PII, credentials, tokens, secrets) handled safely:
+  - Not logged or exposed in error messages
+  - Not sent to client unless necessary
+  - Encrypted at rest and in transit
+- [ ] No injection vulnerabilities: SQL, NoSQL, XSS, command injection, SSRF, path traversal
+- [ ] Dependencies checked for known vulnerabilities (if applicable)
+
+**Always check:** New API endpoints — is auth required? New DB queries — parameterized? New file handling — path sanitized? New URLs fetched — SSRF risk?
+
+### 6. Tests
+
+- [ ] Tests included in the same PR as the code
+- [ ] Happy path covered
+- [ ] Failure cases and edge cases covered (not just "everything works" tests)
+- [ ] Tests actually fail when corresponding code breaks (no false passes)
+- [ ] Tests are readable and reflect real-world scenarios (not implementation-obsessed)
+- [ ] Test names describe the scenario, not the function:
+  - **Good:** `test_create_order_returns_400_when_inventory_empty`
+  - **Avoid:** `test_create_order_2`
+
+**Watch for:** Tests that never call the code they claim to test; snapshot tests nobody reads; tests that pass for wrong reasons (empty assertions, loose mocks).
+
+### 7. Error Handling & Resilience
+
+- [ ] Errors caught and handled explicitly — not swallowed (bare `except`/`catch`)
+- [ ] Error messages meaningful and actionable (include context, not just "error")
+- [ ] Feature degradation is graceful — optional features fail without breaking core flows
+- [ ] Timeouts set for all external calls (HTTP, DB, file I/O)
+- [ ] Retry logic with backoff where appropriate, bounded to avoid cascading failures
+- [ ] Cleanup/release of resources in all paths (success AND error)
+
+**Good:** `"Failed to process payment for order #{order_id}: insufficient funds"`
+**Needs work:** `"Error processing order"`
+
+### 8. Performance
+
+- [ ] No unnecessary database calls, N+1 queries, or redundant network requests
+- [ ] Caching used appropriately — not too much, not too little
+- [ ] No obvious algorithmic inefficiencies (nested loops over large datasets)
+- [ ] Resource cleanup: open files, DB connections, network sockets, streams
+- [ ] Batch operations where individual calls would be expensive
+
+**Rule:** Focus on the 20% of optimizations that produce 80% of results. Don't block for micro-optimizations unless in a hot path.
+
+### 9. Naming & Readability
+
+- [ ] Variable, function, and class names are descriptive and unambiguous
+- [ ] Abbreviations are well-known or unnecessary
+- [ ] Boolean names read naturally: `isActive`, `hasPermission`, `canDelete`
+- [ ] Code is self-explanatory — doesn't need excessive comments to understand
+- [ ] Magic numbers/strings extracted to named constants
+
+**Good:** `maxRetryAttempts`, `pendingInvoiceIds`, `isUserAuthenticated`
+**Needs work:** `x`, `data`, `tmp`, `flag`, `process_stuff`
+
+### 10. Comments & Documentation
+
+- [ ] Comments explain **why**, not **what** (the code already says what)
+- [ ] No outdated comments or commented-out code — remove them
+- [ ] TODOs linked to tickets or have owners, not just floating promises
+- [ ] Public API / module-level documentation present and accurate
+- [ ] Complex algorithms or business rules documented with rationale
+
+**Good:** `// We sort descending because the UI shows newest first by default`
+**Avoid:** `// Loops through all users and checks their status`
+
+### 11. Style & Consistency
+
+- [ ] Follows team's style guide and conventions (language idioms, project patterns)
+- [ ] Formatting consistent with surrounding codebase
+- [ ] No style-only nits that block a PR — always prefix with `NIT:`
+- [ ] Prefer consistency over personal preference: if the file uses one style, match it
+
+**Note:** If no team style guide exists, default to language community conventions (PEP 8 for Python, StandardJS for JS, gofmt for Go, etc.).
+
+### 12. Observability & Operations
+
+- [ ] New features covered by logging, metrics, or structured events
+- [ ] Log statements at appropriate levels: `ERROR` for failures, `WARN` for anomalies, `INFO` for notable events
+- [ ] No PII or secrets logged (emails, IPs unless anonymized, tokens, passwords)
+- [ ] Error tracking (Sentry, DataDog, etc.) captures new failure modes
+- [ ] Metrics or tracing added for performance-critical paths
+- [ ] Feature flags or gradual rollout considered for risky changes
+
+---
+
+## Comment Crafting Guide
+
+### Comment Structure Template
+
+```
+<SEVERITY_LABEL> <topic> in <file>:<line>
+
+**Why:** <explanation of the problem or concern>
+
+**Suggestion:** <actionable recommendation, example code, or question>
+```
+
+### Comment Types with Examples
+
+**Asking a question (preferred for uncertainties):**
+```
+QUESTION: Should we handle the case where `user` is null here? (line 45)
+The API docs say it's optional, so we might get requests without it.
+```
+
+**Pointing out a problem:**
+```
+CRITICAL: Missing input validation in createUser() (line 23)
+The `email` field isn't sanitized before DB insert. This opens us up to
+NoSQL injection. Let's use the `sanitizeEmail()` helper from utils.
+```
+
+**Making a suggestion:**
+```
+SUGGESTION: Extract pagination logic (lines 50-78)
+This logic is duplicated in 3 places now. Worth pulling into a
+reusable `paginate(query, page, limit)` helper.
+```
+
+**Acknowledging good work:**
+```
+NICE: The retry-with-backoff pattern on line 112 is exactly right.
+Clear, configurable, and handles the failure case well.
+```
+
+### Key Rules
+
+1. **One concern per comment** — don't bury multiple issues in one thread
+2. **Explain the WHY** — "this is wrong" is useless; "this is wrong because..." is valuable
+3. **Be specific** — reference exact lines, not just files
+4. **Offer alternatives** — "consider using X instead" is better than "don't use X"
+5. **Use "we" or "this line"** — not "you". Keeps feedback impersonal and collaborative
+6. **Praise good code** — "Nice use of early return here" goes a long way
+
+---
+
+## Review Anti-Patterns
+
+| Anti-Pattern | Why It's Bad | Do This Instead |
+|---|---|---|
+| **Style dictating** | Enforcing personal preferences as team standards | Ask "what does our style guide say?" Default to project conventions |
+| **Rubber-stamping** | Approving without actual review | Read every changed line. If PR is too large, ask to split it |
+| **Bikeshedding** | Spending disproportionate time on trivial issues | Label nits clearly. Don't let a whitespace debate block a PR |
+| **Reviewing too late** | Catching design issues after implementation | Review design docs before code is written |
+| **Assuming intent** | "The developer obviously meant X" | Ask clarifying questions when unsure |
+| **Explosive reviews** | Dumping 50+ comments without prioritization | Use severity labels, distinguish blockers from nits |
+| **Ghost reviewing** | Leaving comments but not finishing the review | Submit your review so the author isn't waiting |
+| **Nitpicking tests** | Criticizing test style while ignoring missing coverage | Focus coverage gaps first, style second |
+
+---
+
+## Domain-Specific Considerations
+
+### Web / Frontend
+- **Accessibility:** Keyboard navigation, screen reader support, color contrast
+- **Responsiveness:** Mobile layouts, touch targets, viewport-relative units
+- **Bundle size:** New dependencies justified? Code-splitting used?
+- **State management:** Proper cleanup on unmount? Race conditions in async effects?
+- **Error states:** Loading, empty, error, and edge states all rendered
+
+### API / Backend
+- **API contract:** Does the response match what clients expect? Versioning?
+- **Rate limiting:** New endpoints need protection?
+- **Validation:** Request body validated at the boundary?
+- **Idempotency:** POST/PUT endpoints handle duplicate requests safely?
+- **Migration:** Backward compatibility with old clients?
+
+### Data / Migrations
+- **Irreversible operations:** `DROP`, destructive `ALTER` — reversible?
+- **Performance impact:** Will this migration lock the table?
+- **Rollback plan:** Can the migration be rolled back cleanly?
+- **Data integrity:** Constraints, validation, orphaned records handled?
+- **Timing:** Long-running migrations need batching or background processing?
+
+### Infrastructure / Config
+- **Secrets management:** Hardcoded credentials? Environment variables properly used?
+- **Least privilege:** Service roles, IAM policies, network rules too permissive?
+- **Drift detection:** Config-as-code changes auditable?
+- **Dependency changes:** Base image updates, package version bumps tested?
+- **Rollback strategy:** Can infra changes be reverted?
+
+---
+
+## PR Size Strategies
+
+| Size | Lines Changed | Approach |
+|------|--------------|----------|
+| 🟢 Small | < 200 | Full thorough review using entire checklist |
+| 🟡 Medium | 200-500 | Focus deep review on changed files, quick scan on related files |
+| 🟠 Large | 500-1000 | Ask to split. If can't split, review by commit/feature boundary |
+| 🔴 Excessive | > 1000 | Request PR be broken into smaller logical PRs before reviewing |
+
+**When you can't split:** Focus on correctness and security first (Steps 3-4),
+skim design and style (Steps 2, 11), and explicitly note what you didn't review.
+
+---
+
+## Post-Review & Follow-Up
+
+After submitting your review:
+1. **Watch for responses** — engage in discussion threads, especially on blockers
+2. **Verify fixes** — re-check that blocker/critical concerns were addressed
+3. **Know when to re-review** — if the author pushes significant changes, do a second pass
+4. **Approve clearly** — when all blockers resolved, approve so the PR can merge
+5. **Learn from patterns** — if you're repeatedly flagging the same issue, suggest a team-wide lint rule or practice improvement
+
+---
+
+## Reviewer Conduct (Core Rules)
+
+- **Read every changed line** — don't skim, don't skip files
+- **Review in context** — understand how the diff fits into the whole file/system
+- **Out-of-scope issues** — raise as separate tasks; don't block this PR for them
+- **Ask questions, don't make demands** — "Should we handle the null case?" not "Add null handling"
+- **Acknowledge good work** — at least one positive comment per review
+- **Be respectful** — the code isn't the person. Critique the code, not the author
+- **Reply to responses** — if the author explains their reasoning, engage thoughtfully
+
+---
 
 ## PR Type Variations
 
-- **Feature PRs**: full checklist + migration reversibility + monitoring additions
-- **Bug fix PRs**: verify root cause is addressed, not just symptoms; regression test added
-- **Refactor PRs**: behavior must be unchanged; test coverage should increase or stay same
-- **Dependency updates**: check changelog for breaking changes and security advisories
+- **Feature PRs:** Full checklist + migration reversibility + monitoring additions + feature flag check
+- **Bug fix PRs:** Verify root cause addressed (not just symptoms); regression test added; similar patterns checked elsewhere
+- **Refactor PRs:** Behavior must be unchanged (no hidden fixes); test coverage should increase or stay same
+- **Dependency updates:** Changelog reviewed for breaking changes; security advisories checked; test suite passes with new version
+- **Hotfix PRs:** Even more focused — correctness and security only; style and nits deferred
+- **Documentation PRs:** Technical accuracy; examples compile/run; link freshness
