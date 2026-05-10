@@ -1,33 +1,304 @@
 ---
 name: risk-and-dependency-identification
-description: Identify risks, blockers, and dependencies in a plan before finalizing it. Use after task decomposition, before finalizing a plan.
+description: >-
+  Identify risks, blockers, and dependencies in a plan before finalizing it. Use
+  after task decomposition, before finalizing a plan. This skill provides a
+  systematic methodology for surfacing hidden risks, mapping dependency chains,
+  scoring threats by likelihood and impact, and recommending mitigations. Use it
+  whenever a planner asks "what could go wrong?", reviews task dependencies, or
+  needs to validate a plan's risk posture before handoff. Do NOT skip this skill
+  before finalizing any non-trivial plan — even plans that seem simple often
+  hide implicit dependencies or overlooked risks.
 ---
 
-# Risk and Dependency Identification
+# Risk and Dependency Identification — Systematic Threat Assessment
 
-## When to Use
+A plan without risk analysis is not a plan — it's a wish. This skill gives you
+a repeatable methodology to surface what could go wrong, how bad it would be,
+and what to do about it. Use it after task decomposition and before plan
+finalization.
 
-After task decomposition, before finalizing a plan.
+---
 
-## Risk Identification
+## Methodology Overview
 
-For each task, ask:
+Follow this sequence every time:
 
-- What could go wrong?
-- Does this depend on an external system, API, or team?
-- Is this in unfamiliar territory (new tech, unclear requirements)?
-- What happens if this task is delayed or fails?
+```
+1. DECOMPOSE   → Break the plan into individual tasks
+2. ANALYZE     → For each task, identify risks AND dependencies
+3. SCORE       → Rate each risk by likelihood × impact
+4. MITIGATE    → Assign mitigations for all medium+ risks
+5. FLAG        → Mark high/critical risks for human review
+6. MAP CHAINS  → Map dependency chains and find the critical path
+```
 
-## Dependency Identification
+---
 
-- **Internal dependencies** — tasks within this plan that must complete first
-- **External dependencies** — other teams, services, or systems outside this plan
-- **Implicit dependencies** — shared resources, environments, or data that could cause conflicts
+## Step 1: Risk Identification — What Could Go Wrong?
 
-## Output Format
+For EVERY task in the plan, systematically check each risk category.
 
-| Risk/Dependency | Type | Impact | Mitigation |
-|---|---|---|---|
-| Description | internal / external / implicit | high / medium / low | What to do about it |
+### Risk Categories
 
-Flag any high-impact risks for human review before proceeding.
+| Category | What to Look For | Example Questions |
+|----------|-----------------|-------------------|
+| **Technical** | Architecture, performance, tech debt, security, compatibility | Is the approach proven? Are there performance constraints? Any security implications? |
+| **Schedule** | Estimates, sequencing, bottlenecks, deadlines | Are estimates realistic? Is this on the critical path? What if it slips? |
+| **Resource** | People, tooling, budget, access, knowledge | Does the right person exist? Do we need special access? Is there a knowledge gap? |
+| **External** | Third-party APIs, vendors, open-source deps, regulatory | Does this depend on an external system? What if the API changes? Any legal/regulatory concerns? |
+| **Integration** | Contract mismatches, data format changes, API versioning | Are the integration points well-defined? What if formats change? |
+| **Operational** | Deployment, monitoring, rollback, incident response | How do we deploy this? Can we roll back? What happens when it breaks at 3 AM? |
+| **Hidden/Implicit** | Assumptions that haven't been validated | What are we assuming that isn't true? What's the single point of failure? |
+
+### Prompting Questions (per task)
+
+If you're stuck, run through these:
+
+- **Novelty:** Is this something the team has done before, or is it new territory?
+- **Complexity:** Does this task hide sub-tasks? Is it estimated as "large"?
+- **Coupling:** Does this task touch shared code, data, or infrastructure?
+- **External reliance:** Does this task need something outside the team's control?
+- **Timing:** Is there a hard deadline? A dependency chain that leaves no buffer?
+- **Failure mode:** If this task fails or is delayed, what's the blast radius?
+- **Knowledge gap:** Does someone need to learn something new to complete this?
+
+---
+
+## Step 2: Dependency Identification — What Must Happen First?
+
+For EVERY task, identify what it truly depends on — not just the obvious things.
+
+### Dependency Types
+
+| Type | Description | Example |
+|------|-------------|---------|
+| **Internal** | Other tasks within this plan | Task B needs Task A's API to be ready |
+| **External** | Teams, services, or systems outside the plan | Needs database migration from Platform Team |
+| **Implicit** | Shared resources or timing constraints | Two tasks modify the same schema — merge conflicts |
+| **Transitive** | Dependencies of dependencies | A→B→C means A truly depends on C too |
+| **Informational** | A decision or spec that must exist first | Need UX mockup before building the form |
+| **Environmental** | Infrastructure, access, or tooling needed | Need staging environment deployed first |
+
+### Dependency Chain Mapping
+
+For plans with 3+ tasks, draw the dependency chain and find the **critical path**:
+
+```
+Task A ──→ Task B ──→ Task D ──→ Task E  (critical path = A → B → D → E)
+    └──→ Task C ──┘
+```
+
+The longest chain of dependencies is your **critical path** — any delay on this
+path directly delays the entire plan. Flag it.
+
+### Transitive Dependency Check
+
+If Task A depends on Task B, and Task B depends on Task C, then Task A
+**truly** depends on Task C. Surface transitive dependencies explicitly —
+they're the ones most often missed.
+
+### Implicit Dependency Detection
+
+Ask these questions to surface hidden dependencies:
+
+- Do any two tasks modify the same files, schemas, or configurations?
+- Do any tasks share a resource (database, environment, API key)?
+- Could task ordering cause conflicts?
+- Is there a shared service that both tasks depend on?
+- Do tasks have contradictory requirements (e.g., one needs stability, another needs upgrades)?
+
+---
+
+## Step 3: Risk Scoring — How Bad Is It?
+
+Score every identified risk using the **Likelihood × Impact** matrix.
+
+### Likelihood Scale
+
+| Level | Definition | Guide |
+|-------|-----------|-------|
+| **Rare** | <10% chance | Would require unusual circumstances |
+| **Unlikely** | 10-30% chance | Possible but not expected |
+| **Possible** | 30-60% chance | Could happen in normal conditions |
+| **Likely** | 60-90% chance | Expected under normal conditions |
+| **Almost Certain** | >90% chance | Will happen unless actively prevented |
+
+### Impact Scale
+
+| Level | Definition | Example |
+|-------|-----------|---------|
+| **Negligible** | Minimal effect, no delay | Cosmetic issue, fixable in minutes |
+| **Minor** | Small delay or extra effort | 1-2 day delay, workaround exists |
+| **Moderate** | Notable delay or rework | 1-week delay, partial rework needed |
+| **Major** | Significant delay or scope change | Multi-week delay, architecture change |
+| **Critical** | Blocks completion or causes failure | Plan cannot complete, data loss, security incident |
+
+### Risk Score Matrix
+
+| Likelihood ↓ Impact → | Negligible | Minor | Moderate | Major | Critical |
+|----------------------|-----------|-------|----------|-------|----------|
+| **Almost Certain** | Medium | High | **Critical** | **Critical** | **Critical** |
+| **Likely** | Low | Medium | High | **Critical** | **Critical** |
+| **Possible** | Low | Medium | High | High | **Critical** |
+| **Unlikely** | Low | Low | Medium | Medium | High |
+| **Rare** | Low | Low | Low | Medium | High |
+
+**Action by score:**
+- **Critical** → MUST flag for human review. Blocking if unmitigated.
+- **High** → MUST have a mitigation plan. Flag for human review.
+- **Medium** → Should have a mitigation plan or explicit acceptance.
+- **Low** → Note and move on. Acceptable without action.
+
+---
+
+## Step 4: Mitigation Strategies — What Do We Do About It?
+
+For every Medium+ risk, assign a mitigation from one of five strategies:
+
+| Strategy | When to Use | Example |
+|----------|------------|---------|
+| **AVOID** | When you can eliminate the risk entirely | Choose a different, proven technology instead of an experimental one |
+| **MITIGATE** | When you can reduce likelihood or impact | Add monitoring, implement retry logic, build fallback paths |
+| **TRANSFER** | When someone else can handle it better | Use a managed service instead of self-hosting; get insurance |
+| **ACCEPT** | When the cost of mitigation exceeds the risk | Low-impact, unlikely risks — document and move on |
+| **CONTINGENCY** | When you need a plan B if the risk materializes | "If API X goes down, fall back to batch processing" — only activated on trigger |
+
+### Writing Good Mitigations
+
+A good mitigation answers: **What exactly will we do, when, and who will do it?**
+
+| ❌ Weak | ✅ Strong |
+|---------|-----------|
+| "Will monitor it" | "Add uptime monitoring with PagerDuty alert if latency exceeds 500ms for 5 minutes — owned by SRE team" |
+| "Will test it" | "Add integration tests for the fallback path before deploying to production" |
+| "Have a backup plan" | "If the vendor API is down for >10 minutes, switch to cached responses and notify users via status page" |
+| "Hope it works" | (Never acceptable. Not a mitigation.) |
+
+---
+
+## Step 5: Output Format — The Risk Register
+
+Consolidate everything into a risk register table. This is the format that feeds
+directly into the **plan-output-template** `Risks & Blockers` section.
+
+### Standard Risk Register
+
+| Risk/Dependency | Type | Score (L×I) | Impact | Mitigation |
+|----------------|------|-------------|--------|------------|
+| Third-party API rate limits | external | Likely × Moderate = **High** | API calls fail under load | Implement queuing + retry with exponential backoff |
+| Task 2 shares DB schema with Task 1 | implicit | Possible × Major = **High** | Merge conflicts, data corruption | Sequence tasks: Task 1 completes schema changes before Task 2 starts |
+| Team unfamiliar with GraphQL | technical | Likely × Minor = **Medium** | Slow implementation, poor design | Schedule 2-day GraphQL workshop before implementation starts |
+
+### Critical Path Annotation
+
+For plans with dependency chains, add a critical path section:
+
+```
+CRITICAL PATH: Task A → Task B → Task D → Task E (4 tasks, estimated 10 days)
+  ⚠ Any delay on this chain pushes the entire plan. Consider:
+  - Adding buffer to Task B (highest complexity on critical path)
+  - Parallelizing Task C (off the critical path — safe to de-prioritize)
+```
+
+---
+
+## Step 6: Human Review Triggers
+
+Flag the plan for human review when ANY of these are true:
+
+- **Critical risks exist** — Score is Critical per the matrix
+- **Unmitigated High risks** — High score without a concrete mitigation
+- **Circular dependencies** — Task A → B → A (impossible to schedule)
+- **Missing information** — "Unknown" likelihood or impact on a significant risk
+- **Critical path is too long** — Critical path exceeds 80% of total schedule
+- **External blocker** — Plan depends on an unconfirmed external commitment
+
+---
+
+## Examples
+
+### Good Example
+
+Given a plan to add a payment processing feature:
+
+```
+Tasks:
+1. Integrate Stripe API (medium)
+2. Build checkout UI (medium, depends on Task 1)
+3. Set up webhook handler (small, depends on Task 1)
+4. Add refund flow (small, depends on Task 3)
+```
+
+**Risk analysis output:**
+
+| Risk/Dependency | Type | Score | Impact | Mitigation |
+|----------------|------|-------|--------|------------|
+| Stripe API rate limits or breaking changes | external | Possible × Major = **High** | Payments fail, revenue loss | Use Stripe's idempotency keys; monitor API changelog; pin API version |
+| Task 3 (webhooks) must handle duplicates | technical | Likely × Moderate = **High** | Duplicate charge events cause double-processing | Make webhook handler idempotent — check event ID before processing |
+| PCI compliance | external | Unlikely × Critical = **High** | Legal liability, fines | Use Stripe Elements (card data never touches our server); document compliance approach |
+| Poor test coverage for payment flows | operational | Possible × Moderate = **High** | Bugs reach production | Mandate integration tests for all payment flows; add sandbox testing |
+| Checkout UI depends on Stripe API | transitive | — | Medium | Task 2 (UI) truly depends on both Task 1 AND Stripe — if Stripe has an outage, UI is blocked |
+
+```
+CRITICAL PATH: Task 1 → Task 3 → Task 4 (3 tasks)
+  ⚠ Task 4 (refunds) blocked until webhooks work. Consider parallelizing.
+```
+
+### Bad Example — What NOT to Do
+
+```markdown
+## Risks
+| Risk | Type | Impact | Mitigation |
+|------|------|--------|------------|
+| API might go down | external | high | Will monitor it |
+| Tasks might have conflicts | internal | medium | Will be careful |
+```
+
+**Why it's bad:**
+- Vague risk descriptions — "API might go down" doesn't say which API or why
+- No likelihood assessment — "high impact" without probability means nothing
+- Mitigations are not actionable — "Will monitor it" is not a plan
+- Missing critical risks — payment processing without PCI compliance or idempotency?
+- No dependency analysis — transitive dependencies not surfaced
+- No critical path identified
+
+---
+
+## Integration with Plan Output Template
+
+The risk register table above is designed to drop directly into the
+**plan-output-template** `Risks & Blockers` section without modification.
+
+When this skill produces output, format it so it's ready for copy-paste into
+any of these plan types from plan-output-template:
+- Feature Plan → `Risks & Blockers` table
+- Bugfix Plan → `Risks & Blockers` section
+- Refactor Plan → `Risks & Blockers` section
+- Integration Plan → `Risks & Blockers` section
+- Multi-Phase Plan → Phase-specific risks + cross-phase risks
+
+---
+
+## Rules & Guidelines
+
+1. **Every plan needs risk analysis** — No exceptions for "simple" plans. Simple
+   plans hide the most assumptions.
+2. **Score every risk** — Likelihood × Impact. A risk without a score is an
+   unquantified fear, not an actionable finding.
+3. **Every Medium+ risk needs a mitigation** — If you can't mitigate it, accept
+   it explicitly and document why.
+4. **Surface transitive dependencies** — A → B → C means A truly depends on C.
+   Make it explicit.
+5. **Find the critical path** — Every multi-task plan has one. Know it. Flag it.
+   Put buffer on it.
+6. **Flag for human review** — Critical risks, circular deps, and unmitigated
+   High risks must be reviewed before the plan is handed off.
+7. **Integrate with plan-output-template** — The risk register format is designed
+   to slot directly into the plan-output-template's `Risks & Blockers` section.
+8. **"Hope" is not a mitigation** — Every mitigation must describe an action,
+   not a wish.
+9. **Consider negative scenarios, not just positive ones** — What if the vendor
+   goes bankrupt? What if the key person quits? What if the estimates were wrong?
+10. **Update risks when the plan changes** — A new task can introduce new risks
+    and invalidate old ones.
