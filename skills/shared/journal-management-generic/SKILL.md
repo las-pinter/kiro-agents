@@ -72,68 +72,39 @@ ls <USER_HOME>/agent-notes/<AGENT_NAME>/journals/daily/ | sort | tail -1
 
 ### Writing journals
 
-When writing journal entries, use the `write` tool (not `edit`). This avoids partial-write corruption and is safer for journal files.
+Use the `write` tool (not `edit`) for all journal files — this prevents partial-write corruption.
+- **New file:** Write fresh with a complete entry.
+- **Existing file:** READ first, then WRITE the full merged content. Always preserve previous content.
 
-- **If the file DOES NOT exist:** Write it fresh with a complete entry.
-- **If the file DOES exist:** READ the existing content first, then WRITE the full file again with the new content appended (or merged) at the appropriate place. Never use the `edit` tool for journal files — `write` with the full merged content is safer.
+### Entry Format
 
-## Writing Guidance
-
-### Entry Structure
-
-Each journal entry should use a consistent structure. Follow this template:
+Each entry follows this template:
 
 ```markdown
 # YYYY-MM-DD — <Agent Name>, <Role/Title>
 
 ## Summary
-
-**Task:** <brief description of what was asked/accomplished>
-
-**Details:**
-- <bullet point of what was built/changed/discovered>
-- <another point>
-- <another point, keep it factual>
+**Task:** <brief description>
+**Details:** <bullet points of what was done>
 
 ## Key Decisions
-- <decision made and why>
+- <decision and rationale>
 
 ## Issues / Blockers
-- <anything that went wrong or is blocked>
+- <what went wrong>
 
 ## Verification
-- <check 1> ✅
-- <check 2> ✅
+- <check> ✅
 
 ## Lessons Learned
-- <anything worth remembering for next time>
+- <worth remembering next time>
 ```
 
-Stick to a factual, neutral style. Your journal is for future-you and other agents — clarity matters more than creativity.
+Stick to factual, neutral style. Write entries after: delegations complete, commits made, multi-step tasks finished, errors, and session end.
 
-### When to Write
-
-Write a journal entry after EACH of these events:
-
-| Event | What to document |
-|-------|-----------------|
-| **Delegation completed** | What subagent did, result, any issues |
-| **Commit made** | Commit hash, summary of changes |
-| **Multi-step task finished** | Overview of what was accomplished |
-| **Error/troubleshooting** | What went wrong, how it was fixed |
-| **Session end / pause** | Summary of everything done this session |
-
-### Entry Types: CREATE vs UPDATE vs APPEND
-
-- **CREATE** — First entry of the day. Write the full file with initial content.
-- **UPDATE** — A later entry the same day. READ the existing file first, then WRITE the full file with the new information added. Preserve all previous content.
-- **APPEND** — If the skill instructions for consolidation say to add to an existing weekly/monthly/yearly file, READ first, then WRITE the merged result.
-
-**CRITICAL:** All writes to daily journals MUST use `write` (not `edit` or `append`). Always preserve existing content when updating.
+**IMPORTANT:** All writes use `write` with full merged content. Always READ before WRITE — this applies to daily, weekly, monthly, and yearly entries.
 
 ### Example Entry
-
-Here is a complete example showing the expected format:
 
 ```markdown
 # 2026-05-08 — DataProcessor, ETL Pipeline Agent
@@ -166,25 +137,9 @@ Here is a complete example showing the expected format:
 
 ## Startup Read Behavior
 
-### Always Load
-
-1. **Latest daily journal** — Find and read the most recent `YYYY-MM-DD.md` file from `<USER_HOME>/agent-notes/<AGENT_NAME>/journals/daily/`. This gives you context from the most recent session.
-
-2. **Current period consolidation** — Check if there is a weekly (`YYYY-Wnn.md`) or monthly (`YYYY-MM.md`) summary that covers the current date. If so, read it for broader context.
-
-### When Deeper Context is Needed
-
-Read additional entries using the same two-method approach (glob first, ls fallback) when:
-
-- The user's task references work from more than a few days ago
-- You need to understand long-running decisions or project history
-- The latest daily entry mentions dependencies on earlier work
-
-**Priority order for additional reads:**
-1. Weekly summary (covers a week of context in one read)
-2. Monthly summary (covers a month — good for project history)
-3. Yearly summary (covers the whole year — for major retrospection)
-4. Specific daily entries (when you need exact detail)
+1. **Latest daily journal** — Read the most recent `YYYY-MM-DD.md` from your daily journal directory.
+2. **Current period consolidation** — Check for a weekly or monthly summary covering today's date.
+3. **Deeper context** — Read in priority order: weekly → monthly → yearly → specific dailies.
 
 ## Consolidation
 
@@ -209,29 +164,15 @@ Use the helper script (see `scripts/` directory) to find source files for consol
 **Keep consolidation SUMMARIES short.** The goal is to preserve key facts while reducing volume. Aim for:
 
 - **Weekly:** 1-2 paragraphs per day (10-15 lines total)
-- **Monthly:** 1 paragraph per week (5-10 lines total)
-- **Yearly:** 1 paragraph per month (10-15 lines total)
+- **Monthly:** 1 paragraph per week (15-25 lines total)
+- **Yearly:** 1 paragraph per month (20-30 lines total)
 
 ## Error Handling & Safety
 
-When things go wrong with journal operations, follow these rules:
-
-### File Not Found
-- If a journal file doesn't exist when reading, it probably means no work was done that day. This is normal. Don't error out.
-- If a directory doesn't exist when writing, create it with `mkdir -p`.
-
-### Write Failures
-- If `write` fails (permission error, disk full, etc.), retry once. If it fails again, report it to the user.
-- Never lose data. If a write fails after you've read the existing content, keep the content in your context and retry.
-
-### Data Loss Prevention
-- **Always READ before WRITE** when updating an existing journal file.
-- Never use `edit` or `sed`/`perl` to modify journal files inline — always use `write` with the full merged content.
-- If a write changes a file unexpectedly, use git to check what happened if the journals are in a git repository.
-
-### Parallel Write Conflicts
-- If you're running alongside other agents that might write to the same journal file, coordinate by writing different sections clearly labeled with your agent name.
-- When in doubt, write a separate file and mention the other file in your entry.
+- **File not found** — Normal for unused days. Create directories with `mkdir -p` on write.
+- **Write failures** — Retry once. If it fails again, report it. Never lose data — keep content in context and retry.
+- **Data loss prevention** — Always READ before WRITE. Never use `edit` or `sed` for journals — always `write` with full merged content.
+- **Parallel writes** — Coordinate by writing different sections labeled with your agent name, or write separate files and cross-reference.
 
 ## Scripts
 

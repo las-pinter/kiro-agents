@@ -59,7 +59,7 @@ Q7: Does the task require verifying behaviour of existing code,
   → NO:  Proceed to Q8.
 
 Q8: None of the above rules matched.
-  → Handle directly (see "When NOT to Route" below).
+  → Handle directly (see "Route or Handle Directly?" below).
      If the task still feels delegatable after review, re-evaluate
      which subtask types it contains and decompose.
 ```
@@ -141,72 +141,43 @@ When a task genuinely spans multiple types, decompose it into sequenced or paral
 
 ---
 
-## When NOT to Route
+## Route or Handle Directly?
 
-Some tasks should be handled by the orchestrator directly without delegation.
+| Task Type | Action |
+|-----------|--------|
+| Synthesizing subagent outputs | Handle directly |
+| Simple status/context checks | Handle directly |
+| Trivial one-line changes | Handle directly |
+| Routing decisions | Handle directly |
+| Journal operations | Handle directly |
+| Greetings / conversation | Handle directly |
+| Non-trivial file write or edit | Route to Implementer |
+| Research outside current context | Route to Researcher |
+| Evaluation of correctness/quality | Route to Reviewer |
+| Task decomposition | Route to Planner |
+| Testing/verification | Route to Tester |
+| Codebase exploration | Route to Researcher |
 
-### Handle Directly
-
-| Situation | Why |
-|-----------|-----|
-| **Synthesizing subagent outputs** | Combining results IS the orchestrator's primary function |
-| **Simple status or context checks** | "What's the current status?" — data already in context |
-| **Trivial one-line changes** | A typo fix, a constant value change — no logic, no risk |
-| **Routing decisions themselves** | Determining which agent to route to is your core responsibility |
-| **Orchestrator journal operations** | Read/write journal per journal-management skill |
-| **Greeting or purely conversational** | Simple responses that don't need delegation |
-
-### Always Route
-
-| Situation | Route To |
-|-----------|----------|
-| Any non-trivial file write or edit | Implementer |
-| Any research outside current context | Researcher |
-| Any evaluation of correctness or quality | Reviewer |
-| Any task decomposition | Planner |
-| Any testing or verification | Tester |
-| Any substantial codebase exploration | Researcher |
-
-**Golden rule:** If you catch yourself reaching for a write/edit/research tool on a delegatable task — STOP. Dispatch a subagent instead. This rule overrides all "handle directly" exceptions above.
+**Golden rule:** If you catch yourself reaching for a write/edit/research tool on a delegatable task — STOP. Dispatch a subagent instead.
 
 ---
 
 ## Routing Examples
 
-### Example 1: Research-Heavy Feature
+### Research-Heavy Feature
 **User:** "Find the best Go rate-limiting library that supports Redis, then implement middleware for our API."
 **Route:** Researcher → Implementer → Reviewer
 **Why:** Research first (libraries don't exist in context), implement second, review third. Clear sequential dependency.
 
-### Example 2: Bug in Unfamiliar Code
-**User:** "The checkout page crashes when applying coupon code 'SAVE50'. Find the relevant code and fix it."
-**Route:** Researcher → Implementer → Tester
-**Why:** The code location is unknown → researcher locates it. Implementer fixes. Tester verifies.
-
-### Example 3: Ambiguous Feature Request
+### Ambiguous Feature Request
 **User:** "We need a notification system."
 **Route:** Planner → Implementer → Tester → Reviewer
 **Why:** Completely ambiguous — needs decomposition before any code is written.
 
-### Example 4: Pure Code Review
-**User:** "Review my PR for security vulnerabilities."
-**Route:** Reviewer
-**Why:** Pure evaluation task. No research, no implementation. User explicitly said "review."
-
-### Example 5: Parallel Subtasks
-**User:** "Update the database schema AND write API documentation AND add unit tests for the auth module."
-**Route:** Implementer (schema) + Implementer (docs) + Tester (auth tests) — all in parallel
-**Why:** Three independent subtasks. Each routes to its appropriate type. No dependencies between them.
-
-### Example 6: Direct Handling
+### Direct Handling
 **User:** "What did we work on last session?"
 **Route:** Handle directly
 **Why:** Information retrieval from the orchestrator's own journals. No delegation needed.
-
-### Example 7: Multi-Step Research + Build
-**User:** "Research WebSocket libraries for Python, pick the best one, implement a chat server with it, and test it handles concurrent connections."
-**Route:** Researcher → Implementer → Tester → Reviewer
-**Why:** Research first, then build, then test concurrency, then final review.
 
 ---
 

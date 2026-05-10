@@ -179,8 +179,7 @@ A good mitigation answers: **What exactly will we do, when, and who will do it?*
 
 ## Step 5: Output Format — The Risk Register
 
-Consolidate everything into a risk register table. This is the format that feeds
-directly into the **plan-output-template** `Risks & Blockers` section.
+Consolidate everything into a risk register table.
 
 ### Standard Risk Register
 
@@ -267,38 +266,18 @@ CRITICAL PATH: Task 1 → Task 3 → Task 4 (3 tasks)
 
 ## Integration with Plan Output Template
 
-The risk register table above is designed to drop directly into the
-**plan-output-template** `Risks & Blockers` section without modification.
-
-When this skill produces output, format it so it's ready for copy-paste into
-any of these plan types from plan-output-template:
+When this skill produces output, format it for copy-paste into:
 - Feature Plan → `Risks & Blockers` table
-- Bugfix Plan → `Risks & Blockers` section
-- Refactor Plan → `Risks & Blockers` section
-- Integration Plan → `Risks & Blockers` section
-- Multi-Phase Plan → Phase-specific risks + cross-phase risks
+- Bugfix / Refactor / Integration Plan → `Risks & Blockers` section
+- Multi-Phase Plan → Phase-specific + cross-phase risks
 
 ---
 
 ## Rules & Guidelines
 
-1. **Every plan needs risk analysis** — No exceptions for "simple" plans. Simple
-   plans hide the most assumptions.
-2. **Score every risk** — Likelihood × Impact. A risk without a score is an
-   unquantified fear, not an actionable finding.
-3. **Every Medium+ risk needs a mitigation** — If you can't mitigate it, accept
-   it explicitly and document why.
-4. **Surface transitive dependencies** — A → B → C means A truly depends on C.
-   Make it explicit.
-5. **Find the critical path** — Every multi-task plan has one. Know it. Flag it.
-   Put buffer on it.
-6. **Flag for human review** — Critical risks, circular deps, and unmitigated
+1. **Flag for human review** — Critical risks, circular deps, and unmitigated
    High risks must be reviewed before the plan is handed off.
-7. **Integrate with plan-output-template** — The risk register format is designed
-   to slot directly into the plan-output-template's `Risks & Blockers` section.
-8. **"Hope" is not a mitigation** — Every mitigation must describe an action,
+2. **"Hope" is not a mitigation** — Every mitigation must describe an action,
    not a wish.
-9. **Consider negative scenarios, not just positive ones** — What if the vendor
-   goes bankrupt? What if the key person quits? What if the estimates were wrong?
-10. **Update risks when the plan changes** — A new task can introduce new risks
-    and invalidate old ones.
+3. **Update risks when the plan changes** — A new task can introduce new risks
+   and invalidate old ones.

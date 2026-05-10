@@ -32,7 +32,6 @@ improve quality, and share knowledge — not to prove superiority.
 - **Curiosity over criticism:** Ask "what if X happens?" instead of "this is wrong"
 - **Specific over vague:** Point to exact lines and explain the *why*
 - **Balanced feedback:** Acknowledge good solutions, not just problems
-- **Timely, not rushed:** Give the PR the attention it deserves, but don't block the team
 
 ---
 
@@ -42,29 +41,21 @@ improve quality, and share knowledge — not to prove superiority.
 Before reading a single line of diff, understand the context:
 - Read the PR title, description, and linked ticket
 - Check what files were changed (not just count — which *areas*)
-- Identify whether this is a feature, bugfix, refactor, or dependency change
-- Check if docs/specs need updating (and if they were)
 
 ### Step 2: High-Level Pass — Design & Structure
 Read the overall shape of the change:
 - Does the approach make sense? Is there a simpler way?
-- Does the change belong where it's placed?
 - Does it respect existing architectural boundaries?
-- Are new abstractions justified?
 
 ### Step 3: Deep Dive — Correctness & Logic
 Read every changed line carefully:
 - Does the logic handle the happy path AND edge cases?
-- Are there off-by-one errors, race conditions, or state corruption risks?
 - Do the tests actually verify the right behavior?
-- Run the affected tests in your head: would they fail if the code broke?
 
 ### Step 4: Cross-Cutting Pass — Security, Ops, Performance
 Check concerns that span the whole change:
 - Security: injection, auth, data exposure, secret handling
-- Observability: logging, metrics, error reporting
 - Performance: N+1 queries, unnecessary work, resource leaks
-- Resilience: timeouts, retries, graceful degradation
 
 ### Step 5: Craft & Organize Comments
 Group related feedback, assign severity, and write clearly (see Comment Crafting below).
@@ -72,7 +63,6 @@ Group related feedback, assign severity, and write clearly (see Comment Crafting
 ### Step 6: Follow Up
 After the author responds:
 - Verify blocker/critical fixes were applied correctly
-- Re-review if the change was significant
 - Approve when all blockers are resolved
 
 ---
@@ -81,13 +71,13 @@ After the author responds:
 
 Label every issue with its severity so the author knows what to prioritize:
 
-| Severity | Label | Meaning | Example |
-|----------|-------|---------|---------|
-| 🔴 Blocker | `BLOCKER` | Must fix before merge. Bug, security hole, or spec violation. | "This SQL query is vulnerable to injection" |
-| 🟠 Critical | `CRITICAL` | Should fix before merge. Likely causes bugs in production. | "Missing input validation on user IDs" |
-| 🟡 Important | `IMPORTANT` | Should fix, doesn't block merge. May cause future issues. | "No test for the pagination edge case" |
-| 🔵 Suggestion | `SUGGESTION` | Nice to have. Improves code quality or maintainability. | "Consider extracting this into a helper" |
-| ⚪ Nitpick | `NIT` | Style preference only. Never blocks a PR. | "Minor: trailing whitespace on line 42" |
+| Severity | Label | Meaning |
+|----------|-------|---------|
+| 🔴 Blocker | `BLOCKER` | Must fix before merge. Bug, security hole, or spec violation. |
+| 🟠 Critical | `CRITICAL` | Should fix before merge. Likely causes bugs in production. |
+| 🟡 Important | `IMPORTANT` | Should fix, doesn't block merge. May cause future issues. |
+| 🔵 Suggestion | `SUGGESTION` | Nice to have. Improves code quality or maintainability. |
+| ⚪ Nitpick | `NIT` | Style preference only. Never blocks a PR. |
 
 **Rule:** Start each review comment with the severity label so the author can triage at a glance.
 
@@ -102,9 +92,6 @@ Label every issue with its severity so the author knows what to prioritize:
 - [ ] Scope is appropriate — small enough to review thoroughly
 - [ ] Matches the linked ticket/issue/spec (no scope creep)
 - [ ] README, docs, API specs, or ADRs updated if behavior changed
-
-**Good:** "Adds user search by email. Required for admin panel (ticket #422). New /users/search endpoint."
-**Needs work:** "fix search"
 
 ### 2. Design & Architecture
 
@@ -194,9 +181,6 @@ Label every issue with its severity so the author knows what to prioritize:
 - [ ] Code is self-explanatory — doesn't need excessive comments to understand
 - [ ] Magic numbers/strings extracted to named constants
 
-**Good:** `maxRetryAttempts`, `pendingInvoiceIds`, `isUserAuthenticated`
-**Needs work:** `x`, `data`, `tmp`, `flag`, `process_stuff`
-
 ### 10. Comments & Documentation
 
 - [ ] Comments explain **why**, not **what** (the code already says what)
@@ -204,9 +188,6 @@ Label every issue with its severity so the author knows what to prioritize:
 - [ ] TODOs linked to tickets or have owners, not just floating promises
 - [ ] Public API / module-level documentation present and accurate
 - [ ] Complex algorithms or business rules documented with rationale
-
-**Good:** `// We sort descending because the UI shows newest first by default`
-**Avoid:** `// Loops through all users and checks their status`
 
 ### 11. Style & Consistency
 
@@ -232,41 +213,12 @@ Label every issue with its severity so the author knows what to prioritize:
 
 ### Comment Structure Template
 
-```
-<SEVERITY_LABEL> <topic> in <file>:<line>
-
-**Why:** <explanation of the problem or concern>
-
-**Suggestion:** <actionable recommendation, example code, or question>
-```
+Format: `<SEVERITY_LABEL> <topic> in <file>:<line>` — explain **Why** and offer a **Suggestion**.
 
 ### Comment Types with Examples
 
-**Asking a question (preferred for uncertainties):**
-```
-QUESTION: Should we handle the case where `user` is null here? (line 45)
-The API docs say it's optional, so we might get requests without it.
-```
-
-**Pointing out a problem:**
-```
-CRITICAL: Missing input validation in createUser() (line 23)
-The `email` field isn't sanitized before DB insert. This opens us up to
-NoSQL injection. Let's use the `sanitizeEmail()` helper from utils.
-```
-
-**Making a suggestion:**
-```
-SUGGESTION: Extract pagination logic (lines 50-78)
-This logic is duplicated in 3 places now. Worth pulling into a
-reusable `paginate(query, page, limit)` helper.
-```
-
-**Acknowledging good work:**
-```
-NICE: The retry-with-backoff pattern on line 112 is exactly right.
-Clear, configurable, and handles the failure case well.
-```
+- **Asking a question:** `QUESTION: Should we handle null user? (line 45)` — API docs say it's optional.
+- **Pointing out a problem:** `CRITICAL: Missing input validation in createUser() (line 23)` — NoSQL injection risk.
 
 ### Key Rules
 
@@ -283,13 +235,10 @@ Clear, configurable, and handles the failure case well.
 
 | Anti-Pattern | Why It's Bad | Do This Instead |
 |---|---|---|
-| **Style dictating** | Enforcing personal preferences as team standards | Ask "what does our style guide say?" Default to project conventions |
 | **Rubber-stamping** | Approving without actual review | Read every changed line. If PR is too large, ask to split it |
 | **Bikeshedding** | Spending disproportionate time on trivial issues | Label nits clearly. Don't let a whitespace debate block a PR |
 | **Reviewing too late** | Catching design issues after implementation | Review design docs before code is written |
-| **Assuming intent** | "The developer obviously meant X" | Ask clarifying questions when unsure |
 | **Explosive reviews** | Dumping 50+ comments without prioritization | Use severity labels, distinguish blockers from nits |
-| **Ghost reviewing** | Leaving comments but not finishing the review | Submit your review so the author isn't waiting |
 | **Nitpicking tests** | Criticizing test style while ignoring missing coverage | Focus coverage gaps first, style second |
 
 ---
@@ -298,31 +247,23 @@ Clear, configurable, and handles the failure case well.
 
 ### Web / Frontend
 - **Accessibility:** Keyboard navigation, screen reader support, color contrast
-- **Responsiveness:** Mobile layouts, touch targets, viewport-relative units
 - **Bundle size:** New dependencies justified? Code-splitting used?
 - **State management:** Proper cleanup on unmount? Race conditions in async effects?
-- **Error states:** Loading, empty, error, and edge states all rendered
 
 ### API / Backend
 - **API contract:** Does the response match what clients expect? Versioning?
-- **Rate limiting:** New endpoints need protection?
 - **Validation:** Request body validated at the boundary?
 - **Idempotency:** POST/PUT endpoints handle duplicate requests safely?
-- **Migration:** Backward compatibility with old clients?
 
 ### Data / Migrations
 - **Irreversible operations:** `DROP`, destructive `ALTER` — reversible?
-- **Performance impact:** Will this migration lock the table?
 - **Rollback plan:** Can the migration be rolled back cleanly?
 - **Data integrity:** Constraints, validation, orphaned records handled?
-- **Timing:** Long-running migrations need batching or background processing?
 
 ### Infrastructure / Config
 - **Secrets management:** Hardcoded credentials? Environment variables properly used?
 - **Least privilege:** Service roles, IAM policies, network rules too permissive?
-- **Drift detection:** Config-as-code changes auditable?
 - **Dependency changes:** Base image updates, package version bumps tested?
-- **Rollback strategy:** Can infra changes be reverted?
 
 ---
 
@@ -335,9 +276,6 @@ Clear, configurable, and handles the failure case well.
 | 🟠 Large | 500-1000 | Ask to split. If can't split, review by commit/feature boundary |
 | 🔴 Excessive | > 1000 | Request PR be broken into smaller logical PRs before reviewing |
 
-**When you can't split:** Focus on correctness and security first (Steps 3-4),
-skim design and style (Steps 2, 11), and explicitly note what you didn't review.
-
 ---
 
 ## Post-Review & Follow-Up
@@ -346,8 +284,6 @@ After submitting your review:
 1. **Watch for responses** — engage in discussion threads, especially on blockers
 2. **Verify fixes** — re-check that blocker/critical concerns were addressed
 3. **Know when to re-review** — if the author pushes significant changes, do a second pass
-4. **Approve clearly** — when all blockers resolved, approve so the PR can merge
-5. **Learn from patterns** — if you're repeatedly flagging the same issue, suggest a team-wide lint rule or practice improvement
 
 ---
 
@@ -355,11 +291,9 @@ After submitting your review:
 
 - **Read every changed line** — don't skim, don't skip files
 - **Review in context** — understand how the diff fits into the whole file/system
-- **Out-of-scope issues** — raise as separate tasks; don't block this PR for them
 - **Ask questions, don't make demands** — "Should we handle the null case?" not "Add null handling"
 - **Acknowledge good work** — at least one positive comment per review
 - **Be respectful** — the code isn't the person. Critique the code, not the author
-- **Reply to responses** — if the author explains their reasoning, engage thoughtfully
 
 ---
 
@@ -369,5 +303,3 @@ After submitting your review:
 - **Bug fix PRs:** Verify root cause addressed (not just symptoms); regression test added; similar patterns checked elsewhere
 - **Refactor PRs:** Behavior must be unchanged (no hidden fixes); test coverage should increase or stay same
 - **Dependency updates:** Changelog reviewed for breaking changes; security advisories checked; test suite passes with new version
-- **Hotfix PRs:** Even more focused — correctness and security only; style and nits deferred
-- **Documentation PRs:** Technical accuracy; examples compile/run; link freshness

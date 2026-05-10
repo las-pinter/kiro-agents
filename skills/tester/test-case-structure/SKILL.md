@@ -68,18 +68,6 @@ it('returns error when cart is empty')
 
 # Python
 test_given_empty_cart_when_checkout_then_raises_error
-
-// Java
-givenEmptyCart_whenCheckout_thenRaisesError()
-
-// C#
-GivenEmptyCart_WhenCheckout_ThenRaisesError()
-
-// Rust
-fn empty_cart_checkout_raises_error()
-
-// Go
-func TestGivenEmptyCart_WhenCheckout_RaisesError(t *testing.T)
 ```
 
 ### Pattern 2: Condition-Outcome
@@ -92,12 +80,6 @@ it('rejects payment when balance insufficient')
 
 # Python
 test_insufficient_balance_rejects_payment
-
-// Java
-insufficientBalance_rejectsPayment()
-
-// C#
-InsufficientBalance_RejectsPayment()
 ```
 
 ### Pattern 3: Descriptive / BDD Style
@@ -113,10 +95,6 @@ describe('User Login', () => {
 # Python (with pytest-describe or nested classes)
 class TestLogin:
     def test_succeeds_with_valid_credentials(self): ...
-
-// Java (@DisplayName)
-@DisplayName("Login succeeds with valid credentials")
-loginSucceedsWithValidCredentials()
 ```
 
 ### Pattern 4: Nested Context (Recommended for Complex Flows)
@@ -189,38 +167,6 @@ Scenario: [name]
 
 **Use AAA** for developer-facing unit tests. **Use GWT** for stakeholder-facing scenarios (BDD, acceptance tests).
 
-### Good Example (AAA)
-
-```
-test: calculateTotalWithDiscount
-  // Arrange
-  cart = createCart(items: [item1, item2])
-  discount = 0.1
-
-  // Act
-  total = cart.calculateTotal(discount)
-
-  // Assert
-  expect(total).equals(90.0)
-```
-
-### Bad Example (Multiple Behaviors)
-
-```
-test: cart_operations
-  cart.addItem(item1)
-  expect(cart.count).equals(1)      // Testing add
-  cart.removeItem(item1)
-  expect(cart.count).equals(0)      // Testing remove
-  total = cart.calculateTotal()
-  expect(total).equals(0)           // Testing calculate
-```
-
-**Split into three tests:**
-- `addingItemIncreasesCount`
-- `removingItemDecreasesCount`
-- `emptyCartTotalIsZero`
-
 ---
 
 ## Test Data Management
@@ -238,13 +184,6 @@ test: cart_operations
 - 📏 Rule: Defaults must be valid — calling with no overrides must pass all validation
 
 **3. Builders** — Fluent interface for complex construction
-```python
-UserBuilder()
-    .with_name("Alice")
-    .with_role("admin")
-    .with_permissions(["read", "write"])
-    .build()
-```
 - ✅ Good for: Objects with many optional fields; readability
 - 📏 Rule: Immutable pattern prevents shared state between tests
 
@@ -281,19 +220,8 @@ UserBuilder()
 
 ### Good vs Bad Assertions
 
-❌ **Bad:**
-```python
-assert result == True                     # Too vague
-assert len(items) > 0                     # Doesn't verify content
-assert response.status_code == 200        # Doesn't verify body
-```
-
-✅ **Good:**
-```python
-assert result.is_success == True          # Named property
-assert items == [expected_item]           # Verifies exact content
-assert response.json() == {'id': 1}       # Verifies body too
-```
+❌ **Bad:** `assert result == True` — too vague, doesn't verify content.
+✅ **Good:** `assert result.is_success == True` — named property, precise assertion.
 
 ---
 
@@ -373,10 +301,7 @@ Follow language conventions while maintaining universal principles:
 | **Python** | `test_behavior_when_context` | AAA with blank-line separation |
 | **JavaScript/TS** | `it('behavior when context')` or `it.each` | `describe`/`it` blocks |
 | **Java** | `@DisplayName("behavior")` + `behaviorWhenContext()` | JUnit 5 with `assertAll` |
-| **C#** | `Behavior_Context_Outcome()` | xUnit `[Fact]` / `[Theory]` |
 | **Go** | `TestBehaviorWhenContext(t *testing.T)` | Table-driven tests with sub-tests |
-| **Rust** | `fn behavior_when_context()` | `#[test]` with nested `mod` blocks |
-| **Kotlin** | `"behavior when context" { ... }` | String test names with Spek/Kotest |
 
 ---
 
@@ -386,7 +311,7 @@ Follow language conventions while maintaining universal principles:
 
 | Cause | Frequency | Fix |
 |-------|-----------|-----|
-| **Async wait issues** | ~45% | Replace `sleep()` with condition-based waits + explicit timeouts |
+| **Async wait issues** | ~45% [1] | Replace `sleep()` with condition-based waits + explicit timeouts |
 | **Shared state pollution** | Common | Each test creates its own data; transaction rollback |
 | **Test order dependencies** | Common | Randomize test order; each test self-contained |
 | **Concurrency problems** | Common | Proper locking; test isolation |
@@ -411,17 +336,4 @@ Follow language conventions while maintaining universal principles:
 
 ## Test Code Review Checklist
 
-When reviewing test code, check for:
-
-- [ ] Does the test exist? — every new function/endpoint/component needs a test
-- [ ] Is the structure clear? — AAA pattern visible, phases delineated
-- [ ] Is the name descriptive? — explains scenario + outcome without reading the body
-- [ ] Are tests independent? — no shared mutable state, no order dependencies
-- [ ] Are assertions meaningful? — specific matchers, not truthy checks
-- [ ] Edge cases covered? — empty, null, boundary, error paths, not just happy path
-- [ ] No implementation detail testing? — tests behavior, not internal calls
-- [ ] No over-mocking? — mocks for external boundaries only
-- [ ] No sleeps/hardcoded waits? — all waits are condition-based
-- [ ] Test data isolated? — each test creates its own; no shared fixtures for mutable data
-- [ ] Regression test for bug fixes? — bug fix PR includes a test that would have caught it
-- [ ] Coverage threshold met? — new code at 80%+; overall coverage never decreases
+This checklist is a summary of the topics above. For detailed guidance on each point, see the corresponding section.

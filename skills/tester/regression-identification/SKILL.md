@@ -57,7 +57,6 @@ Map the impact radius of each change:
 | **Static grep/search** | Search for imports/references across the codebase | Quick assessment, small-medium projects |
 | **Build graph traversal** | Use build system deps (Bazel, Gradle, cargo) | Large projects with defined module boundaries |
 | **Dynamic call tracing** | Run coverage tools on existing tests | Precise mapping at method level |
-| **Git co-change history** | Files that frequently change together | Historical pattern detection |
 | **Test-to-code mapping** | Pre-computed map of which tests cover which files | CI integration, large teams |
 
 **Rule of thumb:** For every file changed, trace at minimum:
@@ -76,7 +75,6 @@ For each changed unit, determine if existing tests cover it:
 | New function | Is there a new test for it? |
 | Changed behavior | Do existing tests assert the OLD behavior that changed? |
 | Removed code | Were there tests for the removed functionality? |
-| Edge cases | Do tests cover boundary conditions on changed paths? |
 | Error paths | Are error handling changes tested? |
 
 **Run the relevant existing tests** and verify:
@@ -95,8 +93,6 @@ Overlay the change map against the test coverage map:
 | Behavior changed, tests unchanged | Tests pass for wrong reasons | 🔴 High |
 | Bug fixed, no regression test | Same bug can reappear | 🟠 Medium |
 | Refactored code, coverage dropped | Previously tested paths untested | 🟠 Medium |
-| Edge case added, not tested | Boundary bugs escape | 🟡 Moderate |
-| Error handling added, not tested | Fail silently in production | 🟡 Moderate |
 | Integration point changed, no integration test | Interface mismatch | 🔴 High |
 | Dependency upgraded, no integration test | Breaking change undetected | 🟠 Medium |
 
@@ -115,8 +111,6 @@ Cover gaps by writing tests at the most efficient level:
 | Changed behavior | Unit + Integration | Verifies behavior AND integration |
 | Bug fix | Unit test (reproduces bug) | Prevents regression |
 | API change | Contract test | Catches consumer/provider mismatch |
-| Data/schema change | Integration test | Real DB interaction |
-| Cross-service change | Integration or E2E | Verifies end-to-end wiring |
 
 **Write the test that would have caught the bug before it was introduced.**
 
@@ -130,10 +124,8 @@ Cover gaps by writing tests at the most efficient level:
 | Refactor (no behavior change) | 🟢 Low — but verify | Run existing tests; add characterization tests if missing |
 | New feature | 🟢 Low for existing code | Test new paths; verify integration points unchanged |
 | Interface/API change | 🔴 High | Test all callers; update contract tests; verify backward compat |
-| Performance optimization | 🟠 Medium | Verify correctness preserved; benchmark critical paths |
 | Dependency upgrade | 🔴 High | Run full suite; check changelog for breaking changes |
 | Data schema migration | 🔴 Very High | Test migration forward + rollback; verify data integrity |
-| Configuration change | 🟡 Low-Medium | Smoke test affected paths; verify parsing |
 
 ---
 
@@ -154,14 +146,7 @@ Not all changes need the same depth of regression testing. Use this tiered appro
 
 ## Test Suite Maintenance Cadence
 
-Keep the regression suite healthy with regular maintenance:
-
-| Frequency | Activity |
-|-----------|----------|
-| **Weekly** (1-2h) | Review failures, fix/quarantine flaky tests, update tests for intentional changes |
-| **Monthly** (half day) | Review quarantined tests, fix or delete obsolete ones, check execution time trends |
-| **Quarterly** (1-2 days) | Full suite review — has each test found a bug recently? Does it cover existing functionality? Is there a more efficient level? |
-| **Annually** (1 week) | Full strategy review — test pyramid balance, tooling, defect escape trends, coverage targets |
+For test suite maintenance cadence, see the test-strategy-selection skill.
 
 ---
 
@@ -172,6 +157,4 @@ Keep the regression suite healthy with regular maintenance:
 3. **For refactors: test coverage should increase or stay the same** — never decrease
 4. **For external dependency changes: always run the full integration test suite** — breaking changes are common
 5. **Trace transitive dependencies, not just direct ones** — a utility change can break distant consumers
-6. **If impact radius >5 modules, treat as high-risk** — escalate to full regression regardless of apparent scope
-7. **One test type is not enough** — combine unit + integration for changed behavior; add E2E for critical paths
-8. **Characterization tests for legacy code** — when changing untested code, write tests that capture CURRENT behavior before changing it
+6. **One test type is not enough** — combine unit + integration for changed behavior; add E2E for critical paths

@@ -80,33 +80,17 @@ Beyond shapes, aim for four properties:
 
 ## Decision Framework: Which Test Type When?
 
-### By Question
+### By Question and Scope
 
-| Question You're Asking | Test Type | Why |
-|------------------------|-----------|-----|
-| "Does this **function** do what I expect?" | **Unit** | Fast, isolated, precise |
-| "Do these **components work together**?" | **Integration** | Catches interface mismatches, schema drift |
-| "Is my **API contract** still compatible?" | **Contract** | Service boundaries, consumer-driven |
-| "Can a **user actually do this thing**?" | **E2E** | Full-stack confidence, but expensive |
-| "Is my code **well-typed** and lint-free?" | **Static** | Zero runtime cost, catches typos |
-| "Is this **performance-sensitive** path fast enough?" | **Benchmark** | Measures speed, not correctness |
-| "Is the **migration reversible**?" | **Integration** | Tests migration + rollback |
-
-### By Flow Scope
-
-| Scope | Test Type |
-|-------|-----------|
-| Behavior within a single function/module | Unit test |
-| Behavior at the boundary of two services | Contract test |
-| Behavior involving real DB, queue, or cache | Integration test (Testcontainers) |
-| Behavior across the full system (UI→API→DB→external) | E2E test |
-| Behavior of a critical user journey | E2E test (sparingly) |
-
-### By Kent C. Dodds' Confidence Argument
-
-> "Static analysis cannot give you confidence in business logic. Unit tests cannot ensure you're calling a dependency correctly. Integration tests cannot ensure you're passing the right data to your backend. E2E tests are the most capable, but at a cost."
-
-**Solution:** Use **integration tests as the default** — they give the best confidence per dollar. E2E for critical paths only.
+| Question You're Asking | Test Type | When to Use |
+|------------------------|-----------|-------------|
+| "Does this **function** do what I expect?" | **Unit** | Behavior within a single function/module |
+| "Do these **components work together**?" | **Integration** | Real DB, queue, or cache interactions |
+| "Is my **API contract** still compatible?" | **Contract** | Behavior at the boundary of two services |
+| "Can a **user actually do this thing**?" | **E2E** | Full system flow or critical user journey |
+| "Is my code **well-typed** and lint-free?" | **Static** | Every commit — zero runtime cost |
+| "Is this **performance-sensitive** path fast enough?" | **Benchmark** | Performance-critical code paths |
+| "Is the **migration reversible**?" | **Integration** | Migration forward + rollback verification |
 
 ---
 
@@ -157,9 +141,7 @@ Score each feature or change area on two dimensions:
 ### Key Economic Insights
 
 - **Unit tests** are ~100× cheaper to write and ~100× faster to run than E2E tests (Mike Cohn)
-- **Integration tests** give the best ROI for most modern applications — they catch ~60%+ of production bugs that unit tests miss, at a fraction of E2E cost
-- **The most expensive test is the one written at the wrong level** — too low (misses bugs) or too high (slow, brittle)
-- **Contract tests** are the cheapest way to verify cross-service compatibility — no need to deploy both services
+- **Integration tests** give the best ROI for most modern applications (Google Testing Blog; Cohn)
 
 ---
 
@@ -169,19 +151,14 @@ Score each feature or change area on two dimensions:
 - Start with **70/20/10 pyramid** as default
 - Invest in test infrastructure early (Testcontainers, CI pipeline, test sharding)
 - Establish contract tests from day one if microservices are planned
-- Write tests alongside code (TDD/BDD for domain logic)
 
 ### Legacy Code (Untested, High Debt)
 1. **Write a test before every bug fix** — regression safety net
 2. **Write a test before every refactor** — characterization tests capture current behavior
 3. **Write integration tests first** — they give more value per test than unit tests when boundaries are unclear
-4. **Characterization testing**: Test what the code *does*, not what it *should do*
-
-> "The first useful tests on a legacy system were integration tests that fed data through the full pipeline."
 
 ### Monolith
 - Classic pyramid works well — heavy unit tests, integration tests for module boundaries
-- E2E tests are simpler (single deployable, one process)
 - ⚠️ Danger: E2E tests can balloon because they're "easy" to write — **resist this**
 - Modular monolith: treat internal module boundaries with contract-test rigor
 
@@ -189,32 +166,15 @@ Score each feature or change area on two dimensions:
 - **Pyramid focus flips**: Unit + Contract tests dominate; E2E is minimized
 - **Contract testing is the linchpin** — verifies API compatibility without deploying both services
 - Use **consumer-driven contracts** (Pact) to detect breaking changes pre-deployment
-- Recommended distribution:
-  - 70% Unit (per service)
-  - 20% Contract (cross-service API boundaries)
-  - 5% Integration (service + real database)
-  - 5% E2E (critical user journeys only)
 
 ### Hybrid (Monolith → Microservices Migration)
 - Use the **Strangler Pattern**: extract services incrementally
-- Feature toggles create testing complexity — verify both toggle-on and toggle-off states
 - Contract testing protects new microservice boundaries
 - Integration tests verify sync between old monolith and extracted services
-- ⚡ 68% of successful migrations used contract testing; only 22% of failed ones did
 
 ---
 
 ## CI/CD Integration
-
-### Staged Pipeline (Progressive Confidence)
-
-```
-Commit       → Unit tests + lint + static analysis     → 60% confidence (< 2 min)
-PR merge     → + Integration tests + contract tests     → 80% confidence (5-15 min)
-Staging      → + E2E tests (critical paths)             → 90% confidence (15-30 min)
-Canary       → 5% traffic + monitoring                  → 95% confidence
-Full roll    → 100% traffic                             → 99% confidence
-```
 
 ### Test Selection by Trigger
 
@@ -225,8 +185,6 @@ Full roll    → 100% traffic                             → 99% confidence
 | Merge to main | + Contract, component tests |
 | Deploy to staging | + E2E (critical paths) |
 | Deploy to production | + Smoke tests |
-| Nightly | + Full E2E suite, load, security |
-| Pre-release | + Manual exploratory testing |
 
 ### Quality Gates
 
@@ -246,8 +204,6 @@ Use these as signals, not goals:
 | API handlers | 80%+ line coverage | Unit + Integration |
 | Utility/pure functions | 95%+ | Unit |
 | UI components (critical) | 60%+ | Integration (component tests) |
-| Generated code | 0% (test through integration) | Integration |
-| Database migrations | 0% unit tests (test by running them) | Integration |
 
 ### Speed Budgets
 
@@ -264,10 +220,7 @@ Use these as signals, not goals:
 1. **Push down** — write tests at the lowest level that gives confidence
 2. **Don't write E2E tests for things unit tests can cover** — they're slow and brittle
 3. **Mock external dependencies in unit tests**; use real ones in integration tests
-4. **If unsure, start with unit tests** — add integration tests where units pass but the system still breaks
-5. **State your strategy explicitly** before writing tests (you're choosing a level)
-6. **Contract tests over E2E for service boundaries** — cheaper, faster, less flaky
-7. **Integration tests are the default for most modern apps** — best confidence per dollar
-8. **Revisit the strategy quarterly** — as the codebase evolves, the optimal balance shifts
-9. **Coverage is a signal, NOT a goal** — 100% coverage with no assertions is "code tourism"
-10. **The most expensive test is the one at the wrong level** — invest time getting the strategy right
+4. **Contract tests over E2E for service boundaries** — cheaper, faster, less flaky
+5. **Integration tests are the default for most modern apps** — best confidence per dollar
+6. **Revisit the strategy quarterly** — as the codebase evolves, the optimal balance shifts
+7. **Coverage is a signal, NOT a goal** — 100% coverage with no assertions is "code tourism"
