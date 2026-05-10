@@ -66,28 +66,13 @@ plan-report.sh
 
 ### Lifecycle Rules
 
-1. Every plan starts **active** when created (filename: `YYYY-MM-DD-plan-name.md`)
-2. Active plans transition to exactly **one** terminal state
+1. Every plan starts **active** (filename: `YYYY-MM-DD-<name>.md`) and lives in `<USER_HOME>/agent-notes/planner/plans/`
+2. Active plans transition to exactly **one** terminal state, appending the suffix: `-DONE.md`, `-BLOCKED.md`, or `-ABANDONED.md`
 3. Terminal states are **final** — a done plan should not be resumed (create a new plan)
 4. Blocked plans may later be moved to abandoned if the blocker is permanent
 5. All transitions must include metadata explaining the **why**
+6. The date prefix MUST match the date the plan was **created**, not the date it was completed. This ensures stable filenames and chronological sorting.
 
----
-
-## File Naming Convention
-
-Plans live in `{user_home}/agent-notes/planner/plans/` and follow strict naming:
-
-| State | Format | Example |
-|-------|--------|---------|
-| **Active** | `YYYY-MM-DD-<name>.md` | `2026-05-09-update-auth.md` |
-| **Done** | `YYYY-MM-DD-<name>-DONE.md` | `2026-05-09-update-auth-DONE.md` |
-| **Blocked** | `YYYY-MM-DD-<name>-BLOCKED.md` | `2026-05-09-update-auth-BLOCKED.md` |
-| **Abandoned** | `YYYY-MM-DD-<name>-ABANDONED.md` | `2026-05-09-update-auth-ABANDONED.md` |
-
-
-The date prefix MUST match the date the plan was **created**, not the date it
-was completed. This ensures stable filenames and chronological sorting.
 
 ---
 
@@ -167,16 +152,6 @@ Use this when writing your end-of-day journal to document plan progress.
 Plans should be written by a planner agent (see `task-routing` for planner
 selection). When a plan arrives, the orchestrator MUST verify:
 
-### Minimum Viable Plan Checklist
-
-- [ ] **Title** — A clear, descriptive title as a level-1 heading
-- [ ] **Date** — Date prefix in filename matches creation date
-- [ ] **Objective** — What problem does this plan solve? (1-2 sentences)
-- [ ] **Tasks** — Broken into independently completable units with estimates
-- [ ] **Dependencies** — What must happen before each task can start
-- [ ] **Acceptance criteria** — How will we know each task is done?
-- [ ] **Risks** — What could go wrong? (see risk-and-dependency-identification skill)
-
 ### Plan Template
 
 When a planner produces a plan, verify it follows this structure:
@@ -207,8 +182,18 @@ What problem does this solve? Why does it matter?
 
 ### Plan Quality Gates
 
+Every plan must pass these checks:
+
+- **Title** — Clear, descriptive level-1 heading
+- **Date** — Date prefix in filename matches creation date
+- **Objective** — What problem does this plan solve? (1-2 sentences)
+- **Tasks** — Broken into independently completable units with estimates
+- **Dependencies** — What must happen before each task can start
+- **Acceptance criteria** — How will we know each task is done?
+- **Risks** — What could go wrong? (see risk-and-dependency-identification skill)
+
 Do NOT accept a plan if:
-- Tasks lack clear acceptance criteria — "how will we know it's done?"
+- Tasks lack clear acceptance criteria
 - Estimates are missing or obviously wrong (e.g., "build whole app: 1h")
 - Dependencies are missing or circular
 - The plan references files, repos, or systems that don't exist
@@ -413,7 +398,7 @@ This ensures nothing is marked done until verified.
 | Plan already has a status suffix | Don't re-mark — check current status first |
 | Script fails / permission error | Check file permissions, retry |
 | plan-verify finds bad commit refs | Verify the commit hash is correct — typos happen |
-| Directory doesn't exist | Create it with `mkdir -p {user_home}/agent-notes/planner/plans` |
+| Directory doesn't exist | Create it with `mkdir -p <USER_HOME>/agent-notes/planner/plans` |
 | Unsure what a plan covers | Read the plan file before marking it |
 
 When in doubt, **read the plan file first**. The scripts are helpers, not

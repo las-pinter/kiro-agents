@@ -141,37 +141,14 @@ Integration: Stripe Payment Provider
 
 **Request:** "Add a password reset flow so users can recover their accounts."
 
+See the **plan-output-template** skill for a complete password reset example with tasks, estimates, dependencies, and acceptance criteria. Here's a quick summary of the decomposition pattern:
+
 ```
-# 2026-05-10 - Password Reset Flow
-
-## Objective
-Allow users to reset their password via email without contacting support.
-
-## Tasks
-
-### Task 1: POST /api/auth/reset-request (small)
-**Dependencies:** None
-**Acceptance:** Accepts email, sends reset link (generic response to prevent
-email enumeration), rate-limited to 3 requests per 15 minutes
-**Details:** Crypto-random token, one-hour expiry, store SHA-256 hash in DB
-
-### Task 2: POST /api/auth/reset (small)
-**Dependencies:** Task 1
-**Acceptance:** Valid token + new password → password updated, token
-invalidated. Invalid/expired token → 401 error.
-**Details:** Validate token hash and expiry before accepting new password
-
-### Task 3: Send reset email (medium)
-**Dependencies:** Task 1
-**Acceptance:** Email sent via configured provider with correct link,
-subject line, and template. Failed send reported.
-**Details:** Use existing email service. Template at /templates/emails/reset.html
-
-### Task 4: Reset password form (small)
-**Dependencies:** Task 2
-**Acceptance:** Form accepts token from URL, validates password
-requirements, shows success/error messages
-**Details:** Route: /reset/:token. Client-side password validation.
+Feature: Password Reset Flow
+├── Task 1: POST /api/auth/reset-request (small)
+├── Task 2: POST /api/auth/reset (small, depends on Task 1)
+├── Task 3: Send reset email (medium, depends on Task 1)
+└── Task 4: Reset password form (small, depends on Task 2)
 ```
 
 **Why it works:**
@@ -237,22 +214,9 @@ Do not skip steps — a plan without risk identification is incomplete.
 
 ## Rules
 
-1. **Vertical slices over horizontal layers** — Prefer end-to-end tasks by
-   user-facing action, not by architectural layer. A "Add login form" task is
-   better than "DB schema" + "API endpoint" + "frontend form" separately.
-2. **Every task must be estimable** — If you can't assign small/medium/large,
-   you don't understand it well enough. Decompose until you can.
-3. **Every task needs verifiable acceptance criteria** — "Works correctly" is
-   not acceptable. "Returns 200 with JWT token for valid credentials" is.
-4. **No "and" tasks** — Each task does ONE thing. If the description contains
-   "and", split it.
-5. **Dependencies must be acyclic** — Circular dependencies mean the tasks
-   need restructuring.
-6. **Surface unknowns, don't bury them** — If a task has unresolved questions,
+1. **Surface unknowns, don't bury them** — If a task has unresolved questions,
    list them. Don't assume they'll sort themselves out during implementation.
-7. **Large tasks (> 8h) must be decomposed further** — Large tasks hide
-   complexity and risk. Split until everything is small or medium.
-8. **Max one level of nesting** — Tasks can have subtasks, but subtasks of
+2. **Max one level of nesting** — Tasks can have subtasks, but subtasks of
    subtasks indicate over-engineering. Flatten into a single level.
 
 ---
@@ -264,7 +228,4 @@ Do not skip steps — a plan without risk identification is incomplete.
 | **The monolith** | One task: "Implement X" (large, no details) | Split into user-facing actions |
 | **The layer cake** | "DB" → "API" → "UI" for every feature | Vertical slices — full stack per action |
 | **The hidden research** | "Investigate and implement" in one task | Separate investigation from execution |
-| **The infinite nest** | 1.1.1.3 pattern beyond two levels | Flatten — max one level of subtasks |
-| **The wishful estimate** | Estimating "small" because you want it fast | Estimate based on complexity, not desire |
-| **Tests as afterthought** | "Add tests" as the final cleanup task | Tests defined alongside each implementation task |
 | **The silent unknown** | No open questions section | Surface all unknowns explicitly |

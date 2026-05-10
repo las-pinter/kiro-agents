@@ -162,76 +162,23 @@ context7_resolve(libraryName="Next.js", query="...")
 | Authority | ✅ Official docs, well-known blogs, high-quality tutorials | ❌ Random forum post with no citations |
 | Depth | ✅ Covers the topic thoroughly | ❌ Clickbait headline, shallow content |
 
-**When Exa results are weak:** Try fetching the full page content with `web_fetch_exa`
+**When Exa results are weak:** Try fetching the full page content with `exa_web_fetch_exa`
 for a result that looked promising in highlights.
 
 ---
 
 ## Step 4: Multi-Source Orchestration Patterns
 
-Some queries need MULTIPLE sources. Here are the proven patterns:
+Some queries need multiple sources. Here are the proven patterns in compact form:
 
-### Pattern 1: API + Practice (most common)
-```
-Context7 → Exa
-```
-Get the official API from Context7, then find real-world usage on Exa.
-
-*Example: "How do I use React Query's useMutation?"*
-1. Context7: Get the API signature and options
-2. Exa: Find blog posts showing real implementations
-
-### Pattern 2: Architecture + API
-```
-DeepWiki → Context7
-```
-Understand the system architecture first, then drill into specific APIs.
-
-*Example: "How does Next.js middleware work with the edge runtime?"*
-1. DeepWiki: Understand the middleware pipeline architecture
-2. Context7: Get the exact API for middleware configuration
-
-### Pattern 3: Overview → Deep Dive
-```
-Exa → Context7 (or DeepWiki)
-```
-Get a lay of the land, then go deep.
-
-*Example: "I need to add real-time features to my app"*
-1. Exa: Find overviews of WebSocket vs SSE vs WebRTC approaches
-2. Context7: Get API details for the chosen library (e.g., Socket.IO)
-
-### Pattern 4: Debugging
-```
-Exa → DeepWiki → Context7
-```
-Find the error first, then trace the source, then verify the fix.
-
-*Example: "Getting 'Module not found' error with Next.js dynamic imports"*
-1. Exa: Search for the error message, find GitHub issues and solutions
-2. DeepWiki: Understand how Next.js resolves dynamic imports internally
-3. Context7: Verify the correct dynamic import API
-
-### Pattern 5: Critical Verification
-```
-Context7 + Exa (in parallel)
-```
-Cross-reference a critical claim from two independent sources.
-
-*Example: "Is this deprecation warning real or a false positive?"*
-1. Context7: Check the official changelog or deprecation notice
-2. Exa: Find community discussions confirming the deprecation
-
-### Pattern 6: Unknown Territory
-```
-Exa → [Context7 or DeepWiki] → Exa
-```
-Start broad, go deep, then validate.
-
-*Example: "I need to build a CLI tool in Rust"*
-1. Exa: Find "best CLI frameworks in Rust" articles
-2. Context7: Get API docs for the chosen framework (e.g., clap)
-3. Exa: Find tutorials and real-world examples
+| Pattern | Flow | When |
+|---------|------|------|
+| API + Practice | Context7 → Exa | Library usage + real-world examples |
+| Architecture + API | DeepWiki → Context7 | Understand system, then API details |
+| Overview → Deep Dive | Exa → Context7/DeepWiki | Unknown territory, learn then drill |
+| Debugging | Exa → DeepWiki → Context7 | Error found → trace source → verify fix |
+| Critical Verification | Context7 + Exa (parallel) | Cross-reference critical claims |
+| Unknown Territory | Exa → [C7/DW] → Exa | Start broad, go deep, validate |
 
 ---
 
@@ -246,7 +193,7 @@ When your primary source fails, follow this chain:
   ↓ (if still poor)
 3rd choice:  Broadest source (Exa by default)
   ↓ (if still poor)
-4th choice:  Web fetch (web_fetch_exa) on specific promising URLs
+4th choice:  Web fetch (exa_web_fetch_exa) on specific promising URLs
   ↓ (if still poor)
 Report back: "Unable to find satisfactory results for this query"
 ```
@@ -295,64 +242,18 @@ Report back: "Unable to find satisfactory results for this query"
 behavior, may return outdated patterns, and doesn't have the authoritative
 source. Context7 should always be first for library-specific questions.
 
----
 
-## Anti-Patterns
-
-| ❌ Don't | ✅ Do Instead | Why |
-|----------|--------------|-----|
-| Use Exa for API reference when Context7 has it | Use Context7 first, Exa for practice | Exa misses version details, may be outdated |
-| Use DeepWiki for a simple API question | Use Context7 | DeepWiki is overkill, slower, less precise |
-| Use Context7 for current events or news | Use Exa with date filters | Context7 doesn't have current info |
-| Use Exa without date filters for fast-moving topics | Add `after:YYYY` filter | Prevents stale results |
-| Use one source and stop | Chain sources for complex queries | Single sources miss context |
-| Query Context7 without resolving a library ID first | Always resolve first | Unresolved queries are less precise |
-| Use DeepWiki for non-GitHub or obscure repos | Try Exa first | DeepWiki coverage is limited to known repos |
-| Skip quality heuristics | Evaluate results before proceeding | Poor results lead to poor answers |
-| Ask Exa for "what is X" when X is a library | Use Context7 or the library's own docs | Tutorials are not API references |
-
----
 
 ## Integration With the Researcher Workflow
 
-Source selection fits into the broader research process:
-
-```
-┌──────────────┐     ┌──────────────────┐     ┌──────────────┐
-│ Receive Task │────▶│ CLASSIFY query   │────▶│ SELECT source│
-└──────────────┘     │ (Step 1)         │     │ (Step 2)     │
-                     └──────────────────┘     └──────┬───────┘
-                                                     │
-                                                     ▼
-                     ┌──────────────────┐     ┌──────────────┐
-                     │ EVALUATE results │◀────│ EXECUTE query│
-                     │ (quality heur.)  │     │ (Step 3)     │
-                     └────────┬─────────┘     └──────────────┘
-                              │
-                     ┌────────▼─────────┐
-                     │ Results good?    │
-                     │ YES → return     │
-                     │ NO  → chain      │
-                     │       (Step 4)   │
-                     └──────────────────┘
-```
-
-When returning research results, briefly note WHICH source(s) were used and WHY
-— it helps the orchestrator understand the reliability of the information:
-
-> "Found via Context7 (API reference) and Exa (real-world patterns). Cross-referenced — both agree."
+Classify → Select source → Execute → Evaluate → Chain if needed → Return results with source attribution.
 
 ---
 
 ## Rules & Guidelines
 
 1. **Classify before you search** — A 2-second classification saves a wasted query.
-2. **Resolve Context7 library IDs** — Every time. Unresolved queries are 60% less precise.
+2. **Resolve Context7 library IDs** — Every time. Unresolved queries are significantly less precise.
 3. **Date filters on Exa for current topics** — The default search may return 3-year-old results.
-4. **Chain don't settle** — If your primary source is weak, chain to another.
-5. **Quality-check every result** — A bad source is worse than no source.
-6. **Cross-reference critical facts** — Deprecations, security issues, breaking changes = 2+ sources.
-7. **Don't use DeepWiki for API docs** — It's for architecture, not parameter lists.
-8. **Don't use Exa for version-specific behavior** — It won't know about v14.3.0 edge cases.
-9. **Prefer Context7 over web search for library questions** — Always. It's faster and more accurate.
-10. **Note your sources** — Tell the orchestrator what you used and why.
+4. **Prefer Context7 over web search for library questions** — Always. It's faster and more accurate.
+5. **Note your sources** — Tell the orchestrator what you used and why.

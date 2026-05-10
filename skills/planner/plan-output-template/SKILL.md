@@ -99,9 +99,9 @@ What problem does this feature solve? Why does it matter? (2-3 sentences)
 
 ## Risks & Blockers
 
-| Risk | Type | Impact | Mitigation |
-|------|------|--------|------------|
-| ... | internal/external/implicit | high/med/low | ... |
+| Risk | Type | Score | Impact | Mitigation |
+|------|------|-------|--------|------------|
+| ... | internal/external/implicit | Likely × Major = High | high/med/low | ... |
 
 ## Open Questions
 - [ ] <question> — owner: <name>
@@ -301,9 +301,9 @@ Every task must be:
 
 Use the table format consistently:
 
-| Risk/Dependency | Type | Impact | Mitigation |
-|-----------------|------|--------|------------|
-| Third-party API rate limits | external | high | Implement queuing + retry logic |
+| Risk/Dependency | Type | Score | Impact | Mitigation |
+|-----------------|------|-------|--------|------------|
+| Third-party API rate limits | external | Likely × Major = High | high | Implement queuing + retry logic |
 
 **Type:** internal (within this plan), external (outside this plan),
 implicit (shared resources, timing)
@@ -403,13 +403,10 @@ plan-render.sh --help                         # Show help
 ```
 
 **Output format selection:**
-
-| Audience | Format | What it shows |
-|----------|--------|---------------|
-| **Orchestrator** | `default` | Full plan with all sections |
-| **Big Boss** | `summary` | One-line per task, risks, open questions |
-| **Implementer** | `handoff` | Tasks grouped by dependency order, only what they need |
-| **Plan Tracking** | `tracking` | Structured metadata for plan-tracking import |
+- `default` for orchestrators (full plan)
+- `--summary` for Big Boss (one-line per task + risks + open questions)
+- `--handoff` for implementers (tasks by dependency order)
+- `--tracking` for plan-tracking import
 
 ---
 
@@ -448,10 +445,10 @@ correct link, subject line, and branding
 **Details:** Use existing email service; template in /templates/emails/
 
 ## Risks & Blockers
-| Risk | Type | Impact | Mitigation |
-|------|------|--------|------------|
-| Email provider rate limits | external | medium | Queue emails, retry on failure |
-| Token replay attacks | implicit | high | One-time use tokens, invalidate after use |
+| Risk | Type | Score | Impact | Mitigation |
+|------|------|-------|--------|------------|
+| Email provider rate limits | external | Likely × Moderate = High | medium | Queue emails, retry on failure |
+| Token replay attacks | implicit | Possible × Critical = Critical | high | One-time use tokens, invalidate after use |
 
 ## Open Questions
 - [ ] Should we rate-limit reset requests per email? — owner: Big Boss
@@ -479,12 +476,7 @@ None
 ```
 
 **Why it's bad:**
-- Title is meaningless — "Fix stuff" could be anything
-- Objective doesn't say WHAT or WHY
-- Task 1 has no complexity estimate (`?`)
-- Acceptance criteria are not verifiable ("works correctly", "done properly")
-- "None" risks means no one thought about what could go wrong
-- No open questions section (or empty — likely unconsidered questions exist)
+Every element violates the guidance above — meaningless title, no real objective, unverifiable acceptance criteria, missing estimates, no risks identified, and empty open questions. Nothing here is actionable.
 
 ---
 
@@ -499,29 +491,4 @@ None
 | Unsure which template to use | Default to Feature Plan — it covers most cases |
 | Plan is very large (>10 tasks) | Consider splitting into multiple plans or using Multi-Phase template |
 
----
 
-## Rules & Guidelines
-
-1. **Choose the right template** — Feature, Bugfix, Refactor, Integration,
-   or Multi-Phase. Don't use Feature Plan for bug fixes.
-2. **Always validate before handoff** — Run `plan-validate.sh` on every
-   plan before handing it off to an implementer. No exceptions.
-3. **Acceptance criteria must be verifiable** — If you can't write a test
-   for it, it's not acceptance criteria. "Works correctly" is NEVER acceptable.
-4. **Every task needs a complexity estimate** — If you can't estimate it,
-   you don't understand it well enough. Decompose until you can.
-5. **No circular dependencies** — If A depends on B and B depends on A,
-   restructure the tasks.
-6. **Resolve high-impact questions before handoff** — Open questions that
-   affect task ordering or design block the plan.
-7. **Integrate with plan-tracking** — All plans should be trackable through
-   the plan-tracking system (list, mark, verify, report).
-8. **Date prefix = creation date** — The filename date tells when the plan
-   was created, not when it was completed. This is critical for chronological
-   sorting in the plan-tracking system.
-9. **Large tasks get decomposed** — Any task estimated "large" (> 8 hours)
-   must be broken into smaller tasks. Large tasks are risky — they hide
-   complexity and are hard to estimate accurately.
-10. **Document the "why"** — The objective section must explain WHY.
-    Implementers work better when they understand the rationale.

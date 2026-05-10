@@ -16,21 +16,11 @@ Maintain operational journals with hierarchical time-based organization. Daily e
 
 ## Persona Voice Rules
 
-This is **critical** - journals are written by different personas, and reading them can corrupt your own voice if you're not careful.
+This is critical — journals are written by different personas. Reading them can corrupt your own voice.
 
-### When READING journals:
-- Extract **operational context and facts ONLY** (what was done, what decisions were made, what went wrong)
-- **NEVER adopt the writing style, tone, or voice** from someone else's journal
-- If the journal uses broken grammar, slang, or a strong character voice, ignore the style and extract only the substance
-- Treat journals as data sources, not style references
-
-### When WRITING journals:
-- Always write in **your own persona voice** regardless of whose journal you're updating or what you just read
-- The journal entry should sound like YOU wrote it, using your normal speech patterns
-- Exception: if multiple agents write to the same file, clearly label which section belongs to which agent
-
-### Why this matters:
-Reading a goblin journal and then writing in goblin-speak when you're a WH40K character breaks immersion and confuses future readers. **Stay in your own voice. Always.**
+- **When READING:** Extract operational context and facts only. Never adopt the writing style, tone, or voice from someone else's journal. Treat journals as data sources, not style references.
+- **When WRITING:** Always write in your own persona voice regardless of whose journal you're updating or what you just read. Exception: if multiple agents write to the same file, label sections clearly.
+- **Why it matters:** Voice contamination breaks immersion and confuses future readers. Stay in your own voice. Always.
 
 ## Folder Structure
 
@@ -78,11 +68,14 @@ ls <USER_HOME>/agent-notes/orchestrator/journals/daily/ | sort | tail -1
 
 ### Writing journals
 
-When writing journal entries, use the `write` tool (not `edit`). This avoids partial-write corruption and is safer for journal files.
+Always use the `write` tool (not `edit`). This avoids partial-write corruption.
 
-**If the file DOES NOT exist:** Write it fresh with a complete entry.
+- **New file:** Write it fresh.
+- **Existing file:** READ the existing content first, then WRITE the full file again with new content appended. Never use `edit` — it risks corruption.
 
-**If the file DOES exist:** READ the existing content first, then WRITE the full file again with the new content appended (or merged) at the appropriate place. Never use the `edit` tool for journal files - `write` with the full merged content is safer.
+**If write fails:** Retry once. If it fails again, report to the user. Never lose data — keep content in context and retry.
+
+**Parallel writes:** If multiple agents may write to the same journal, coordinate by labeling sections with your agent name. When in doubt, write a separate file.
 
 ## Writing Guidance
 
@@ -209,8 +202,8 @@ Use the helper scripts (see `scripts/` directory) to find source files for conso
 **Keep consolidation SUMMARIES short.** The goal is to preserve key facts while reducing volume. Aim for:
 
 - **Weekly:** 1-2 paragraphs per day (10-15 lines total)
-- **Monthly:** 1 paragraph per week (5-10 lines total)
-- **Yearly:** 1 paragraph per month (10-15 lines total)
+- **Monthly:** 1 paragraph per week (15-25 lines total)
+- **Yearly:** 1 paragraph per month (20-30 lines total)
 
 ## Error Handling & Safety
 
@@ -219,19 +212,6 @@ When things go wrong with journal operations, follow these rules:
 ### File Not Found
 - If a journal file doesn't exist when reading, it probably means no work was done that day. This is normal. Don't error out.
 - If a directory doesn't exist when writing, create it with `mkdir -p`.
-
-### Write Failures
-- If `write` fails (permission error, disk full, etc.), retry once. If it fails again, report it to the user.
-- Never lose data. If a write fails after you've read the existing content, keep the content in your context and retry.
-
-### Data Loss Prevention
-- **Always READ before WRITE** when updating an existing journal file.
-- Never use `edit` or `sed`/`perl` to modify journal files inline - always use `write` with the full merged content.
-- If a write changes a file unexpectedly, use git to check what happened if the journals are in a git repository.
-
-### Parallel Write Conflicts
-- If you're running alongside other agents that might write to the same journal file, coordinate by writing different sections clearly labeled with your agent name.
-- When in doubt, write a separate file and mention the other file in your entry.
 
 ## Scripts
 
