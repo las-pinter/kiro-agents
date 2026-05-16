@@ -13,7 +13,7 @@
         "allowedKey": "allowedPaths",
         "deniedKey": "deniedPaths"
       },
-      "opencode": true
+      "opencode": "edit"
     },
     "edit": {
       "description": "Modify existing files",
