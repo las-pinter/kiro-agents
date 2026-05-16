@@ -12,11 +12,6 @@
         "~/projects/**": "allow"
       },
       "read": "allow",
-      "write": {
-        "*": "ask",
-        "~/projects/**": "allow",
-        "~/tmp/**": "deny"
-      },
       "edit": {
         "*": "ask",
         "~/.kiro/**": "deny"

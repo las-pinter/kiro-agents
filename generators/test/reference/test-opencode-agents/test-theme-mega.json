@@ -11,11 +11,6 @@
         "*": "ask",
         "~/.config/opencode/**": "allow"
       },
-      "write": {
-        "*": "ask",
-        "~/mega/**": "allow",
-        "~/.kiro/**": "deny"
-      },
       "edit": "allow",
       "bash": {
         "*": "allow",
