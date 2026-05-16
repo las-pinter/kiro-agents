@@ -10,10 +10,6 @@
         "~/workspace/**": "allow"
       },
       "read": "allow",
-      "write": {
-        "*": "ask",
-        "~/workspace/**": "allow"
-      },
       "edit": "ask",
       "bash": {
         "*": "ask",

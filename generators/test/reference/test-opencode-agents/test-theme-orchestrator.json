@@ -50,10 +50,6 @@
         "test-theme-*": "allow"
       },
       "todowrite": "allow",
-      "write": {
-        "*": "ask",
-        "~/agent-notes/orchestrator/**": "allow"
-      },
       "skill": {
         "*": "ask"
       }
