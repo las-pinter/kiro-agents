@@ -20,6 +20,7 @@
       "default": "ask",
       "awk *": "allow",
       "cat *": "allow",
+      "cat *>*": "ask",
       "date *": "allow",
       "diff *": "allow",
       "find * -name *": "allow",
